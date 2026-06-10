@@ -313,56 +313,77 @@ GitHub Actions:
 
 ---
 
-## Phase 6: Zero-Trust WebRTC & Performance Optimization (Weeks 33+)
+## Phase 6: Zero-Trust WebRTC & Performance Optimization (Weeks 33+) ✅ IN PROGRESS
 
 ### Goals
-- Production-ready, zero-trust WebRTC execution layer
-- Decentralized signaling and PQ cryptography integration
-- Integration opportunities with Ansible core
-- Documentation and adoption guide
+- ✅ Pluggable `ConnectionProvider` trait for transport abstraction
+- ✅ Async fan-out parallel execution (tokio-based)
+- ✅ `Batch(n)` strategy: cap concurrent hosts
+- ✅ Module result caching (`CachingModuleRegistry`, `InMemoryCache`, `SqliteCache`)
+- ✅ Benchmarking suite (`criterion`-based for playbooks, variables, multi-host)
+- ⏳ WebRTC PQ transport (`WebRtcPqConnection`) — deferred
+- ⏳ X25519MLKEM768 post-quantum handshakes — deferred
+- ⏳ W3C DID document resolution & ML-DSA payload signing — deferred
 
 ### Milestones
 
-#### Weeks 33-34: Pluggable Transport & WebRTC
-- [ ] Abstract connection providers (`ConnectionProvider` trait)
+#### Weeks 33-34: Pluggable Transport & ConnectionProvider ✅
+- [x] `ConnectionProvider` trait (abstraction over transport)
+- [x] `ConnectionContext` — per-host connection parameters (host, port, user, key, become)
+- [x] `ConnectionType` enum: Local, Ssh, Smart, WebRtc, Other
+- [x] `LocalConnectionProvider` — in-process execution (zero overhead)
+- [x] `SshConnectionProvider` — SSH subprocess transport with become support
+- [x] `ConnectionRegistry` — maps connection types to providers; fallback to local
+- [x] `ConnectionContext::from_vars` — build from ansible_ inventory variables
+- Deferred: WebRTC Data Channel, PQ X25519MLKEM768, W3C DIDs, signaling providers
 
-- Defer these:
-  - [ ] WebRTC Data Channel implementation (`WebRtcPqConnection`)
-  - [ ] X25519MLKEM768 post-quantum cryptographic handshakes
-  - [ ] W3C DID document resolution & payload signing (ML-DSA)
-  - [ ] Embedded (masterless mesh) and external Signaling providers
+#### Weeks 35-36: Parallel Execution ✅
+- [x] `Strategy::Batch(n)` — cap concurrent hosts at `n` (OS threads)
+- [x] `execute_tasks_multi_host_async` — Tokio fan-out with `spawn_blocking`
+- [x] Batched async fan-out via `batch_size` parameter
+- [x] Updated `Strategy::from_str` to parse `"batch_4"` etc.
 
+#### Weeks 37-38: Module Caching & Precompilation ✅
+- [x] `CacheKey` — derived from (module, host, sha256(args))
+- [x] `ModuleResultCache` trait — pluggable backends
+- [x] `InMemoryCache` — HashMap-backed, thread-safe
+- [x] `SqliteCache` — persistent SQLite cache via `rusqlite`
+- [x] `CachingModuleRegistry` — wraps `ModuleRegistry`, caches idempotent modules
+- [x] `CACHEABLE_MODULES` — stat, setup, gather_facts, find
+- [x] Hit-ratio telemetry (`lookups`, `hits` counters)
+- [x] `invalidate_host` / `clear_cache` APIs
 
-#### Weeks 35-36: Parallel Execution
-- [ ] Fan-out parallelization
-- [ ] Host-by-host serial execution
-- [ ] Batch execution strategies
-- [ ] Tokio async runtime optimization
+#### Weeks 39-40: Benchmarking Suite ✅
+- [x] `criterion` added to workspace dependencies
+- [x] `benches/playbook_execution.rs`: parse + execute benchmarks
+  - parse_simple_playbook, parse_multi_task_playbook
+  - execute_simple / multi_task / loop / block playbooks
+  - multi_host_scaling (1/2/4/8 hosts)
+  - async_fan_out (2/4/8 hosts via tokio)
+- [x] `benches/variable_resolution.rs`: template + var resolution benchmarks
+  - simple interpolation, nested dict, loop context, complex filter chain
+  - merged_vars_100 (100-var merge benchmark)
 
-#### Weeks 37-38: Module Caching & Precompilation
-- [ ] Module compilation caching
-- [ ] Module dependency resolution
-- [ ] Fast module loading
-- [ ] Benchmark improvements
-
-#### Weeks 39-40: Benchmarking Suite
-- [ ] Standard workload benchmarks
-- [ ] Comparison with Python Ansible
-- [ ] Performance regression detection
-- [ ] Reports and dashboards
-
-#### Weeks 41-42: Documentation & Adoption
+#### Weeks 41-42: Documentation & Adoption (Planned)
 - [ ] Architecture documentation
 - [ ] Performance tuning guide
 - [ ] Migration guide from ansible-playbook
 - [ ] Troubleshooting guide
 - [ ] Community outreach
 
-#### Weeks 43+: Integration with Ansible Core
+#### Weeks 43+: Integration with Ansible Core (Planned)
 - [ ] Identify hot paths for PyO3 optimization
 - [ ] Prototype template rendering backend switch
 - [ ] Module execution acceleration
 - [ ] Upstream contribution discussions
+
+### Deliverables
+- ✅ `ansiblers-executor::connection` — `ConnectionProvider` trait + `Local`/`SSH` providers
+- ✅ `ansiblers-executor::strategy::execute_tasks_multi_host_async` — Tokio fan-out
+- ✅ `ansiblers-executor::strategy::Strategy::Batch(n)`
+- ✅ `ansiblers-modules::module_cache` — `CachingModuleRegistry`, `InMemoryCache`, `SqliteCache`
+- ✅ `ansiblers-executor/benches/` — criterion benchmark suite
+- ✅ 694 tests, 0 failures (up from 655)
 
 ---
 

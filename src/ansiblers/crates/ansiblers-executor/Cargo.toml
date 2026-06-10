@@ -1,25 +1,36 @@
 [package]
-name        = "ansiblers-executor"
-version     = "0.1.0"
-edition.workspace    = true
+name = "ansiblers-executor"
+version = "0.1.0"
+edition.workspace = true
 rust-version.workspace = true
-license.workspace    = true
+license.workspace = true
 repository.workspace = true
 description = "Task and playbook executor for ansiblers"
 
 [dependencies]
-ansiblers-core      = { workspace = true }
-ansiblers-parser    = { workspace = true }
+ansiblers-core = { workspace = true }
+ansiblers-parser = { workspace = true }
 ansiblers-templates = { workspace = true }
-ansiblers-vars      = { workspace = true }
-ansiblers-modules   = { workspace = true }
-serde               = { workspace = true }
-serde_json          = { workspace = true }
-anyhow              = { workspace = true }
-thiserror           = { workspace = true }
-tracing             = { workspace = true }
+ansiblers-vars = { workspace = true }
+ansiblers-modules = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
 
 [dev-dependencies]
-rstest   = { workspace = true }
-insta    = { workspace = true }
+rstest = { workspace = true }
+insta = { workspace = true }
 tempfile = { workspace = true }
+criterion = { workspace = true }
+tokio = { workspace = true }
+
+[[bench]]
+name = "playbook_execution"
+harness = false
+
+[[bench]]
+name = "variable_resolution"
+harness = false

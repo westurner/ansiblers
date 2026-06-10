@@ -27,12 +27,12 @@ authors = ["ansiblers contributors"]
 
 [workspace.dependencies]
 # Internal crates
-ansiblers-core      = { path = "crates/ansiblers-core" }
-ansiblers-parser    = { path = "crates/ansiblers-parser" }
+ansiblers-core = { path = "crates/ansiblers-core" }
+ansiblers-parser = { path = "crates/ansiblers-parser" }
 ansiblers-inventory = { path = "crates/ansiblers-inventory" }
-ansiblers-vars      = { path = "crates/ansiblers-vars" }
+ansiblers-vars = { path = "crates/ansiblers-vars" }
 ansiblers-templates = { path = "crates/ansiblers-templates" }
-ansiblers-roles     = { path = "crates/ansiblers-roles" }
+ansiblers-roles = { path = "crates/ansiblers-roles" }
 ansiblers-executor = { path = "crates/ansiblers-executor" }
 ansiblers-modules = { path = "crates/ansiblers-modules" }
 ansiblers-molecule = { path = "crates/ansiblers-molecule" }
@@ -86,6 +86,7 @@ rstest = "0.23"
 insta = { version = "1", features = ["yaml", "json"] }
 mockall = "0.13"
 tempfile = "3"
+criterion = { version = "0.5", features = ["async_tokio"] }
 
 [profile.release]
 opt-level = 3

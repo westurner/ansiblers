@@ -99,6 +99,7 @@ pub mod git;
 pub mod homebrew;
 pub mod lineinfile;
 pub mod macports;
+pub mod module_cache;
 pub mod nix;
 pub mod ostree;
 pub mod pacman;
@@ -130,6 +131,10 @@ pub mod zopen;
 pub mod zos;
 pub mod zypper;
 
+pub use module_cache::{
+    CacheKey, CachingModuleRegistry, InMemoryCache, ModuleResultCache, SqliteCache,
+    CACHEABLE_MODULES,
+};
 pub use preview::{is_bwrap_available, PreviewModeWrapper};
 pub use python_wrapper::{
     discover_ansible_library_paths, AnsiblePythonModuleInvoker, ConfigurablePythonInvoker,

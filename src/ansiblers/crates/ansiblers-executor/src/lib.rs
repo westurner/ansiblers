@@ -39,10 +39,15 @@
 //! let executor = PlayExecutor::with_trust(ModuleRegistry::with_defaults(), TrustLevel::PartiallyTrusted);
 //! ```
 
+pub mod connection;
 pub mod play;
 pub mod strategy;
 pub mod task;
 
+pub use connection::{
+    ConnectionContext, ConnectionProvider, ConnectionRegistry, ConnectionType,
+    LocalConnectionProvider, SshConnectionProvider,
+};
 pub use play::{PlayExecutor, PlayResult, PlaybookResult};
-pub use strategy::Strategy;
+pub use strategy::{execute_tasks_multi_host_async, Strategy};
 pub use task::TaskExecutor;
