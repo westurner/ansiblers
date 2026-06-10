@@ -162,11 +162,17 @@ GitHub Actions:
 - ✅ `PythonModuleWrapper` and `AnsiblePythonModuleInvoker`
 - ✅ `PreviewModeWrapper` with bwrap + OverlayFS diff
 - ✅ Linear + Free multi-host strategies
-- ✅ 120 tests, 0 failures
+- ✅ `ansiblers-sandbox` crate: three-layer defense-in-depth security
+  - Layer 1: `jinja2rs::SandboxedEnvironment` + `TrustLevel` / `TemplateEngineConfig` config
+  - Layer 2: `SandboxedModuleRegistry` — bwrap + seccomp BPF injection + OverlayFS diff
+  - Layer 3: `apply_process_seccomp` — coordinator deny-list + strict allow-list profiles
+- ✅ `ConfigurablePythonInvoker` with Subprocess / Native (PyO3) / SubInterpreter backends
+- ✅ Inline `//!` crate docs + `///` item docs across all crates (doc tests pass)
+- ✅ 173 tests, 0 failures
 
 ---
 
-## Phase 3: Inventory & Role Support (Weeks 15-18)
+## Phase 3: Inventory & Role Support (Weeks 15-18) 🔄 IN PROGRESS
 
 ### Goals
 - Full inventory format support (YAML)
