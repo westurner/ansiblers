@@ -11,6 +11,7 @@ members = [
     "crates/ansiblers-playbook",
     "crates/ansiblers-molecule",
     "crates/ansiblers-compat",
+    "crates/ansiblers-sandbox",
     "tests",
 ]
 

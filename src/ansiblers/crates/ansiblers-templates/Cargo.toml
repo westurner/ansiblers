@@ -7,6 +7,12 @@ license.workspace    = true
 repository.workspace = true
 description = "Jinja2 template rendering for ansiblers (powered by jinja2rs)"
 
+[features]
+# Use jinja2rs SandboxedEnvironment for template rendering.
+# Adds: strict-undefined, denied-attrs, path policy, optional seccomp/rlimits.
+# Per-render overhead: ~2–8 µs (context validation walk over vars).
+sandboxed = []
+
 [dependencies]
 ansiblers-core = { workspace = true }
 ansiblers-vars = { workspace = true }
@@ -15,6 +21,7 @@ serde          = { workspace = true }
 serde_json     = { workspace = true }
 anyhow         = { workspace = true }
 thiserror      = { workspace = true }
+tracing        = { workspace = true }
 
 [dev-dependencies]
 rstest = { workspace = true }

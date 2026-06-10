@@ -1,0 +1,49 @@
+[package]
+name        = "ansiblers-sandbox"
+version     = "0.1.0"
+edition.workspace    = true
+rust-version.workspace = true
+license.workspace    = true
+repository.workspace = true
+description = "Defense-in-depth security sandbox for ansiblers: seccomp, bwrap, and template isolation"
+
+[features]
+# Enable kernel-level seccomp syscall filtering for the ansiblers process itself.
+# Requires libseccomp >= 2.5 (available in this environment: 2.6.0).
+seccomp = ["libseccomp"]
+
+# Enable per-module bwrap (bubblewrap) sandboxing.
+# bwrap is already present at /usr/bin/bwrap (0.11.0).
+bwrap = []
+
+# Enable resource limits (RLIMIT_AS, RLIMIT_CPU) for module subprocesses.
+resource-limits = []
+
+# Pull in jinja2rs sandboxed template environment.
+# (jinja2rs has its own `seccomp` feature; we mirror it here for convenience.)
+jinja2-sandbox = ["jinja2rs"]
+
+# Enable all sandbox layers.
+full = ["seccomp", "bwrap", "resource-limits", "jinja2-sandbox"]
+
+[dependencies]
+ansiblers-core      = { workspace = true }
+ansiblers-modules   = { workspace = true }
+ansiblers-templates = { workspace = true }
+serde               = { workspace = true }
+serde_json          = { workspace = true }
+anyhow              = { workspace = true }
+thiserror           = { workspace = true }
+tracing             = { workspace = true }
+
+# Optional: jinja2rs sandboxed template environment
+jinja2rs = { path = "../../../jinja2rs", optional = true }
+
+# Optional: libseccomp bindings for process-level syscall filtering
+libseccomp = { version = "0.3", optional = true }
+tempfile = { workspace = true }
+
+[dev-dependencies]
+rstest   = { workspace = true }
+insta    = { workspace = true }
+tempfile = { workspace = true }

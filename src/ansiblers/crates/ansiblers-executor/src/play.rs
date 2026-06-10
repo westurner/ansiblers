@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use ansiblers_core::{ExecutionContext, HostState, TaskResult};
 use ansiblers_modules::ModuleRegistry;
 use ansiblers_parser::{Block, Play, Playbook, TaskNode};
+use ansiblers_templates::TrustLevel;
 use anyhow::Result;
 use tracing::{error, info, warn};
 
@@ -34,11 +35,24 @@ pub struct PlayResult {
 
 pub struct PlayExecutor {
     registry: ModuleRegistry,
+    /// Default trust level applied to all plays unless overridden.
+    pub trust_level: TrustLevel,
 }
 
 impl PlayExecutor {
     pub fn new(registry: ModuleRegistry) -> Self {
-        Self { registry }
+        Self {
+            registry,
+            trust_level: TrustLevel::Trusted,
+        }
+    }
+
+    /// Construct with an explicit trust level (e.g. for untrusted role content).
+    pub fn with_trust(registry: ModuleRegistry, trust_level: TrustLevel) -> Self {
+        Self {
+            registry,
+            trust_level,
+        }
     }
 
     /// Execute an entire playbook.
@@ -88,7 +102,7 @@ impl PlayExecutor {
             .map(|h| (h.clone(), HostState::new(h)))
             .collect();
 
-        let task_executor = TaskExecutor::new(&self.registry);
+        let task_executor = TaskExecutor::with_trust(&self.registry, self.trust_level);
 
         // Select strategy: free if multiple hosts and play requests it.
         // (Phase 2: strategy field is not yet in the AST; default to Linear.)

@@ -5,18 +5,32 @@ use std::collections::HashMap;
 use ansiblers_core::{ExecutionContext, TaskResult, Value};
 use ansiblers_modules::{ModuleArgs, ModuleRegistry};
 use ansiblers_parser::{Task, TaskArgs};
-use ansiblers_templates::render_string;
+use ansiblers_templates::{AnsibleTemplateEngine, TemplateEngineConfig, TrustLevel};
 use ansiblers_vars::VariableResolver;
 use anyhow::Result;
 use tracing::{debug, info, warn};
 
 pub struct TaskExecutor<'reg> {
     registry: &'reg ModuleRegistry,
+    /// Trust level applied to all template rendering in this executor.
+    /// `TrustLevel::Trusted` (default) has zero overhead.
+    pub trust_level: TrustLevel,
 }
 
 impl<'reg> TaskExecutor<'reg> {
     pub fn new(registry: &'reg ModuleRegistry) -> Self {
-        Self { registry }
+        Self {
+            registry,
+            trust_level: TrustLevel::Trusted,
+        }
+    }
+
+    /// Create an executor with a specific trust level for template rendering.
+    pub fn with_trust(registry: &'reg ModuleRegistry, trust_level: TrustLevel) -> Self {
+        Self {
+            registry,
+            trust_level,
+        }
     }
 
     /// Execute `task` for `host`, returning the task result.
@@ -27,7 +41,7 @@ impl<'reg> TaskExecutor<'reg> {
         // Evaluate `when:` condition — skip if false.
         if let Some(when_expr) = &task.when {
             for condition in when_expr.conditions() {
-                let rendered = render_when(condition, &vars);
+                let rendered = render_when(condition, &vars, self.trust_level);
                 if !evaluate_bool(&rendered) {
                     debug!(task = ?task.name, host, "skipped (when condition false)");
                     let mut r = TaskResult::skipped(host);
@@ -98,13 +112,13 @@ impl<'reg> TaskExecutor<'reg> {
         ctx: &mut ExecutionContext,
         vars: &HashMap<String, Value>,
     ) -> Result<TaskResult> {
-        let args = build_module_args(task, vars)?;
+        let args = build_module_args(task, vars, self.trust_level)?;
         let mut result = self.registry.invoke(&task.module, &args, host, ctx)?;
         result.task_name = task.name.clone();
 
         // Apply changed_when / failed_when overrides.
         if let Some(expr) = &task.changed_when {
-            let rendered = render_when(expr, vars);
+            let rendered = render_when(expr, vars, self.trust_level);
             result.changed = evaluate_bool(&rendered);
             if result.changed && result.status.is_ok() {
                 result.status = ansiblers_core::TaskStatus::Changed;
@@ -114,7 +128,7 @@ impl<'reg> TaskExecutor<'reg> {
         }
 
         if let Some(expr) = &task.failed_when {
-            let rendered = render_when(expr, vars);
+            let rendered = render_when(expr, vars, self.trust_level);
             if evaluate_bool(&rendered) {
                 result.status = ansiblers_core::TaskStatus::Failed;
             }
@@ -149,17 +163,28 @@ impl<'reg> TaskExecutor<'reg> {
 // ---------------------------------------------------------------------------
 
 /// Build [`ModuleArgs`] from a task, rendering template strings in values.
-fn build_module_args(task: &Task, vars: &HashMap<String, Value>) -> Result<ModuleArgs> {
+fn build_module_args(
+    task: &Task,
+    vars: &HashMap<String, Value>,
+    trust: TrustLevel,
+) -> Result<ModuleArgs> {
+    let engine = AnsibleTemplateEngine::with_config(TemplateEngineConfig {
+        trust_level: trust,
+        strict_undefined: trust == TrustLevel::Untrusted,
+        python_callable_warnings: false, // keep hot path fast
+        allowed_read_paths: vec![],
+    });
+
     let raw_dict = task.args.as_dict();
     let mut rendered: HashMap<String, Value> = HashMap::new();
     for (k, v) in raw_dict {
-        let rv = ansiblers_templates::render_value(&v, vars)?;
+        let rv = engine.render_value(&v, vars)?;
         rendered.insert(k, rv);
     }
 
     // For free-form tasks, render the raw params string too.
     if let TaskArgs::FreeForm(s) = &task.args {
-        let rendered_s = render_string(s, vars)?;
+        let rendered_s = engine.render(s, vars)?;
         rendered.insert("_raw_params".to_string(), Value::String(rendered_s));
     }
 
@@ -170,14 +195,20 @@ fn build_module_args(task: &Task, vars: &HashMap<String, Value>) -> Result<Modul
 }
 
 /// Render a `when:` condition expression through the template engine.
-fn render_when(expr: &str, vars: &HashMap<String, Value>) -> String {
+fn render_when(expr: &str, vars: &HashMap<String, Value>, trust: TrustLevel) -> String {
+    let engine = AnsibleTemplateEngine::with_config(TemplateEngineConfig {
+        trust_level: trust,
+        strict_undefined: false, // `when:` conditions may test for undefined
+        python_callable_warnings: false,
+        allowed_read_paths: vec![],
+    });
     // Wrap bare expressions in `{{ }}` if they don't look like a template.
     let template = if expr.contains("{{") || expr.contains("{%") {
         expr.to_string()
     } else {
         format!("{{{{ {expr} }}}}")
     };
-    render_string(&template, vars).unwrap_or_else(|_| expr.to_string())
+    engine.render(&template, vars).unwrap_or_else(|_| expr.to_string())
 }
 
 /// Interpret a rendered string as a boolean.
