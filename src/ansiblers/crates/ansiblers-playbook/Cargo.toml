@@ -1,0 +1,31 @@
+[package]
+name        = "ansiblers-playbook"
+version     = "0.1.0"
+edition.workspace    = true
+rust-version.workspace = true
+license.workspace    = true
+repository.workspace = true
+description = "ransible-playbook — Rust-native ansible-playbook replacement"
+
+[[bin]]
+name = "ransible-playbook"
+path = "src/main.rs"
+
+[dependencies]
+ansiblers-core      = { workspace = true }
+ansiblers-parser    = { workspace = true }
+ansiblers-inventory = { workspace = true }
+ansiblers-vars      = { workspace = true }
+ansiblers-executor  = { workspace = true }
+ansiblers-modules   = { workspace = true }
+serde               = { workspace = true }
+serde_json          = { workspace = true }
+anyhow              = { workspace = true }
+clap                = { workspace = true }
+tracing             = { workspace = true }
+tracing-subscriber  = { workspace = true }
+
+[dev-dependencies]
+rstest   = { workspace = true }
+insta    = { workspace = true }
+tempfile = { workspace = true }

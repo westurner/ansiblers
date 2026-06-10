@@ -1,0 +1,25 @@
+- name: Block/rescue/always play
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Block with rescue
+      block:
+        - name: Intentional failure
+          shell: /bin/false
+
+        - name: This should not run
+          debug:
+            msg: "unreachable"
+      rescue:
+        - name: Handle failure
+          set_fact:
+            rescued: true
+
+      always:
+        - name: Always cleanup
+          set_fact:
+            cleanup_done: true
+
+    - name: Confirm rescued
+      debug:
+        msg: "rescued={{ rescued }}"

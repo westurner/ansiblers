@@ -1,0 +1,19 @@
+- name: Variable substitution play
+  hosts: all
+  gather_facts: false
+  vars:
+    greeting: "Hello"
+    subject: "World"
+    number: 42
+  tasks:
+    - name: Echo with variable
+      shell: echo "{{ greeting }}, {{ subject }}!"
+      register: echo_result
+
+    - name: Set a fact
+      set_fact:
+        computed: "{{ greeting }} {{ subject }}"
+
+    - name: Debug computed
+      debug:
+        msg: "computed={{ computed }}, number={{ number }}"

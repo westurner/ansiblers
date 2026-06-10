@@ -1,0 +1,11 @@
+- name: Simple shell play
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Run echo
+      shell: echo "hello world"
+      register: result
+
+    - name: Display output
+      debug:
+        msg: "{{ result.stdout }}"

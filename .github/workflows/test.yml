@@ -1,0 +1,100 @@
+name: Tests & Coverage
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'src/ansiblers/**'
+      - '.github/workflows/test.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'src/ansiblers/**'
+      - '.github/workflows/test.yml'
+
+defaults:
+  run:
+    working-directory: src/ansiblers
+
+jobs:
+  test:
+    name: Test (stable)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src/ansiblers
+
+      - name: Run unit tests
+        run: cargo test --all
+
+  coverage:
+    name: Coverage (nightly)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rustfmt, clippy, llvm-tools-preview
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src/ansiblers
+
+      - uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Generate coverage with branch analysis
+        run: cargo +nightly llvm-cov --all --lcov --output-path lcov.info
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: src/ansiblers/lcov.info
+          flags: rust
+          fail_ci_if_error: false
+
+      - name: Check coverage thresholds
+        run: cargo +nightly llvm-cov report --fail-under-lines 75
+
+      - name: Generate HTML coverage report
+        run: cargo +nightly llvm-cov report --html
+
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: src/ansiblers/target/llvm-cov/html/
+
+  snapshots:
+    name: Snapshot tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src/ansiblers
+
+      - name: Install cargo-insta
+        run: cargo install cargo-insta
+
+      - name: Run snapshot tests
+        run: cargo insta test --all
+
+      - name: Check no pending snapshots
+        run: cargo insta test --all --check

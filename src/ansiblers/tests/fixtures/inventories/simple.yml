@@ -1,0 +1,33 @@
+all:
+  hosts:
+    host1:
+      ansible_host: 192.168.1.1
+      ansible_connection: local
+      custom_var: "host1_value"
+    host2:
+      ansible_host: 192.168.1.2
+      ansible_connection: local
+  children:
+    webservers:
+      hosts:
+        web1:
+          ansible_host: 10.0.0.1
+          ansible_connection: local
+          ansible_port: 2222
+        web2:
+          ansible_host: 10.0.0.2
+          ansible_connection: local
+      vars:
+        http_port: 80
+        server_role: web
+    databases:
+      hosts:
+        db1:
+          ansible_host: 10.0.1.1
+          ansible_connection: local
+      vars:
+        db_port: 5432
+        server_role: db
+  vars:
+    env: test
+    region: us-east

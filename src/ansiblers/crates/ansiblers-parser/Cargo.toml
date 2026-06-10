@@ -1,0 +1,21 @@
+[package]
+name        = "ansiblers-parser"
+version     = "0.1.0"
+edition.workspace    = true
+rust-version.workspace = true
+license.workspace    = true
+repository.workspace = true
+description = "YAML playbook parser for ansiblers"
+
+[dependencies]
+ansiblers-core = { workspace = true }
+serde          = { workspace = true }
+serde_json     = { workspace = true }
+serde_yaml     = { workspace = true }
+anyhow         = { workspace = true }
+indexmap       = { workspace = true }
+
+[dev-dependencies]
+rstest   = { workspace = true }
+insta    = { workspace = true }
+tempfile = { workspace = true }

@@ -1,0 +1,61 @@
+---
+source: tests/integration/test_playbook_parsing.rs
+expression: pb
+---
+{
+  "plays": [
+    {
+      "name": "Simple shell play",
+      "hosts": "all",
+      "tasks": [
+        {
+          "name": "Run echo",
+          "module": "shell",
+          "args": "echo \"hello world\"",
+          "when": null,
+          "register": "result",
+          "loop_items": null,
+          "loop_var": "item",
+          "notify": [],
+          "tags": [],
+          "become": null,
+          "become_user": null,
+          "ignore_errors": false,
+          "failed_when": null,
+          "changed_when": null,
+          "no_log": false,
+          "delegate_to": null
+        },
+        {
+          "name": "Display output",
+          "module": "debug",
+          "args": {
+            "msg": "{{ result.stdout }}"
+          },
+          "when": null,
+          "register": null,
+          "loop_items": null,
+          "loop_var": "item",
+          "notify": [],
+          "tags": [],
+          "become": null,
+          "become_user": null,
+          "ignore_errors": false,
+          "failed_when": null,
+          "changed_when": null,
+          "no_log": false,
+          "delegate_to": null
+        }
+      ],
+      "handlers": [],
+      "vars": {},
+      "vars_files": [],
+      "become": false,
+      "become_user": null,
+      "gather_facts": false,
+      "tags": [],
+      "any_errors_fatal": false
+    }
+  ],
+  "path": "/workspaces/ansiblers/src/ansiblers/tests/fixtures/playbooks/simple_shell.yml"
+}

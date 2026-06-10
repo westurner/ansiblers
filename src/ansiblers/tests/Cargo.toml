@@ -1,0 +1,40 @@
+[package]
+name        = "ansiblers-it"
+version     = "0.1.0"
+edition.workspace    = true
+rust-version.workspace = true
+license.workspace    = true
+repository.workspace = true
+description = "Integration tests for ansiblers"
+
+# Integration test binaries — each file in tests/ is its own binary.
+[[test]]
+name = "test_playbook_parsing"
+path = "integration/test_playbook_parsing.rs"
+
+[[test]]
+name = "test_inventory"
+path = "integration/test_inventory.rs"
+
+[[test]]
+name = "test_playbook_execution"
+path = "integration/test_playbook_execution.rs"
+
+[lib]
+# Minimal lib needed so Cargo recognises this as a library crate.
+name = "ansiblers_it"
+path = "src/lib.rs"
+
+[dependencies]
+ansiblers-core      = { workspace = true }
+ansiblers-parser    = { workspace = true }
+ansiblers-inventory = { workspace = true }
+ansiblers-vars      = { workspace = true }
+ansiblers-executor  = { workspace = true }
+ansiblers-modules   = { workspace = true }
+ansiblers-templates = { workspace = true }
+serde_json          = { workspace = true }
+
+[dev-dependencies]
+rstest   = { workspace = true }
+insta    = { workspace = true }

@@ -1,0 +1,36 @@
+name: Benchmarks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/ansiblers/**'
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: src/ansiblers
+
+jobs:
+  bench:
+    name: Benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src/ansiblers
+
+      - name: Run benchmarks
+        run: cargo bench --all -- --output-format bencher | tee benchmark-output.txt
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: src/ansiblers/benchmark-output.txt

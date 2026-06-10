@@ -1,0 +1,63 @@
+---
+source: crates/ansiblers-parser/src/parse.rs
+expression: pb
+---
+{
+  "plays": [
+    {
+      "name": "Simple play",
+      "hosts": "all",
+      "tasks": [
+        {
+          "name": "Say hello",
+          "module": "shell",
+          "args": "echo \"{{ greeting }}\"",
+          "when": null,
+          "register": "result",
+          "loop_items": null,
+          "loop_var": "item",
+          "notify": [],
+          "tags": [],
+          "become": null,
+          "become_user": null,
+          "ignore_errors": false,
+          "failed_when": null,
+          "changed_when": null,
+          "no_log": false,
+          "delegate_to": null
+        },
+        {
+          "name": "Debug output",
+          "module": "debug",
+          "args": {
+            "msg": "{{ result.stdout }}"
+          },
+          "when": null,
+          "register": null,
+          "loop_items": null,
+          "loop_var": "item",
+          "notify": [],
+          "tags": [],
+          "become": null,
+          "become_user": null,
+          "ignore_errors": false,
+          "failed_when": null,
+          "changed_when": null,
+          "no_log": false,
+          "delegate_to": null
+        }
+      ],
+      "handlers": [],
+      "vars": {
+        "greeting": "Hello"
+      },
+      "vars_files": [],
+      "become": false,
+      "become_user": null,
+      "gather_facts": true,
+      "tags": [],
+      "any_errors_fatal": false
+    }
+  ],
+  "path": null
+}

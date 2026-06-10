@@ -1,0 +1,19 @@
+- name: Loop play
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Echo each item
+      shell: echo "item={{ item }}"
+      loop:
+        - alpha
+        - beta
+        - gamma
+      register: loop_result
+
+    - name: Loop with when condition
+      debug:
+        msg: "skipped item: {{ item }}"
+      loop:
+        - keep
+        - skip_me
+      when: item != "skip_me"
