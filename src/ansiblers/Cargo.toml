@@ -13,6 +13,8 @@ members = [
     "crates/ansiblers-compat",
     "crates/ansiblers-sandbox",
     "crates/ansiblers-roles",
+    "crates/ansiblers-build",
+    "crates/ansiblers-test",
     "tests",
 ]
 
@@ -35,6 +37,7 @@ ansiblers-executor = { path = "crates/ansiblers-executor" }
 ansiblers-modules = { path = "crates/ansiblers-modules" }
 ansiblers-molecule = { path = "crates/ansiblers-molecule" }
 ansiblers-compat = { path = "crates/ansiblers-compat" }
+ansiblers-build = { path = "crates/ansiblers-build" }
 ansiblers-it = { path = "tests" }
 
 # Template engine (workspace member symlinked in src/)

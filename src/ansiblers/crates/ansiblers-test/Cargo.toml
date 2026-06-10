@@ -1,0 +1,25 @@
+[package]
+name = "ansiblers-test"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "ransible-test — test runner and CI integration for ansiblers"
+
+[[bin]]
+name = "ransible-test"
+path = "src/main.rs"
+
+[dependencies]
+anyhow    = { workspace = true }
+thiserror = { workspace = true }
+serde     = { workspace = true }
+serde_json = { workspace = true }
+clap      = { workspace = true }
+tracing   = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[dev-dependencies]
+rstest   = { workspace = true }
+tempfile = { workspace = true }

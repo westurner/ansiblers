@@ -12,6 +12,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ansiblers-build"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "rstest",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "tempfile",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
 name = "ansiblers-compat"
 version = "0.1.0"
 dependencies = [
@@ -77,6 +91,7 @@ dependencies = [
 name = "ansiblers-it"
 version = "0.1.0"
 dependencies = [
+ "ansiblers-build",
  "ansiblers-core",
  "ansiblers-executor",
  "ansiblers-inventory",
@@ -219,6 +234,21 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tracing",
+]
+
+[[package]]
+name = "ansiblers-test"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "rstest",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
