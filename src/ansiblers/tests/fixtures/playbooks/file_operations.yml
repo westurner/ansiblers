@@ -1,0 +1,31 @@
+- name: File module operations
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Create a directory
+      file:
+        path: /tmp/ansiblers_test_dir
+        state: directory
+        mode: "0755"
+      register: dir_result
+
+    - name: Touch a file
+      file:
+        path: /tmp/ansiblers_test_dir/marker.txt
+        state: touch
+      register: touch_result
+
+    - name: Stat the file
+      stat:
+        path: /tmp/ansiblers_test_dir/marker.txt
+      register: file_stat
+
+    - name: Verify stat result
+      debug:
+        msg: "exists={{ file_stat.stat.exists }}, isreg={{ file_stat.stat.isreg }}"
+
+    - name: Remove the directory
+      file:
+        path: /tmp/ansiblers_test_dir
+        state: absent
+      register: remove_result

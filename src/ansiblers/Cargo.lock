@@ -12,6 +12,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "ansiblers-compat"
+version = "0.1.0"
+dependencies = [
+ "ansiblers-core",
+ "ansiblers-executor",
+ "ansiblers-inventory",
+ "ansiblers-modules",
+ "ansiblers-parser",
+ "anyhow",
+ "pyo3",
+ "rstest",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "ansiblers-core"
 version = "0.1.0"
 dependencies = [
@@ -65,12 +81,14 @@ dependencies = [
  "ansiblers-executor",
  "ansiblers-inventory",
  "ansiblers-modules",
+ "ansiblers-molecule",
  "ansiblers-parser",
  "ansiblers-templates",
  "ansiblers-vars",
  "insta",
  "rstest",
  "serde_json",
+ "tempfile",
 ]
 
 [[package]]
@@ -81,11 +99,35 @@ dependencies = [
  "ansiblers-templates",
  "anyhow",
  "insta",
+ "pyo3",
  "rstest",
  "serde",
  "serde_json",
+ "tempfile",
  "thiserror",
  "tokio",
+]
+
+[[package]]
+name = "ansiblers-molecule"
+version = "0.1.0"
+dependencies = [
+ "ansiblers-core",
+ "ansiblers-executor",
+ "ansiblers-modules",
+ "ansiblers-parser",
+ "anyhow",
+ "clap",
+ "insta",
+ "rstest",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

@@ -1,0 +1,24 @@
+- name: Copy module operations
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Write content to file
+      copy:
+        content: "Hello from ansiblers!\n"
+        dest: /tmp/ansiblers_copy_test.txt
+      register: copy_result
+
+    - name: Copy should be idempotent
+      copy:
+        content: "Hello from ansiblers!\n"
+        dest: /tmp/ansiblers_copy_test.txt
+      register: copy_idempotent
+
+    - name: Verify copy was idempotent
+      debug:
+        msg: "changed={{ copy_idempotent.changed }}"
+
+    - name: Cleanup
+      file:
+        path: /tmp/ansiblers_copy_test.txt
+        state: absent

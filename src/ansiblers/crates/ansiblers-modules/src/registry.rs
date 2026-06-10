@@ -7,10 +7,13 @@ use ansiblers_core::{ExecutionContext, TaskResult};
 use anyhow::Result;
 
 use crate::command::CommandModule;
+use crate::copy::CopyModule;
 use crate::debug::DebugModule;
 use crate::fail::FailModule;
+use crate::file::FileModule;
 use crate::set_fact::SetFactModule;
 use crate::shell::ShellModule;
+use crate::stat::StatModule;
 
 /// Arguments passed to a module at invocation time.
 #[derive(Debug, Clone)]
@@ -53,21 +56,32 @@ pub struct ModuleRegistry {
 }
 
 impl ModuleRegistry {
-    /// Create a registry pre-populated with Phase 1 built-in modules.
+    /// Create a registry pre-populated with Phase 1+2 built-in modules.
     pub fn with_defaults() -> Self {
         let mut r = Self {
             modules: HashMap::new(),
         };
+        // Phase 1
         r.register("shell", Arc::new(ShellModule));
         r.register("command", Arc::new(CommandModule));
         r.register("debug", Arc::new(DebugModule));
         r.register("set_fact", Arc::new(SetFactModule));
         r.register("fail", Arc::new(FailModule));
+        // Phase 2
+        r.register("file", Arc::new(FileModule));
+        r.register("copy", Arc::new(CopyModule));
+        r.register("stat", Arc::new(StatModule));
         r
     }
 
     pub fn register(&mut self, name: &str, invoker: Arc<dyn ModuleInvoker>) {
         self.modules.insert(name.to_string(), invoker);
+    }
+
+    /// Clone the registry by re-creating it with defaults.
+    /// Used by the free-strategy multi-thread executor.
+    pub fn clone_defaults() -> Self {
+        Self::with_defaults()
     }
 
     pub fn get(&self, name: &str) -> Option<Arc<dyn ModuleInvoker>> {

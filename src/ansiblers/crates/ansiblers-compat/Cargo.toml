@@ -1,0 +1,30 @@
+[package]
+name = "ansiblers-compat"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "PyO3 Python bindings exposing PlaybookRunner and inventory loading"
+
+[lib]
+name = "ansiblers_compat"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# Build as a Python extension module with maturin.
+extension-module = ["pyo3/extension-module"]
+
+[dependencies]
+ansiblers-core = { workspace = true }
+ansiblers-parser = { workspace = true }
+ansiblers-inventory = { workspace = true }
+ansiblers-executor = { workspace = true }
+ansiblers-modules = { workspace = true }
+pyo3 = { version = "0.22", features = ["auto-initialize"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+rstest = { workspace = true }

@@ -8,6 +8,7 @@ use ansiblers_parser::{Block, Play, Playbook, TaskNode};
 use anyhow::Result;
 use tracing::{error, info, warn};
 
+use crate::strategy::{execute_tasks_multi_host, Strategy};
 use crate::task::TaskExecutor;
 
 // ---------------------------------------------------------------------------
@@ -89,11 +90,29 @@ impl PlayExecutor {
 
         let task_executor = TaskExecutor::new(&self.registry);
 
-        // Execute task list for each host.
-        for host in &hosts {
-            let state = host_states.get_mut(host).unwrap();
-            let results = self.run_task_list(&play.tasks, host, ctx, state, &task_executor)?;
-            host_results.insert(host.clone(), results);
+        // Select strategy: free if multiple hosts and play requests it.
+        // (Phase 2: strategy field is not yet in the AST; default to Linear.)
+        let strategy = Strategy::default();
+
+        // For multi-host, use the strategy executor; for single hosts fall through.
+        if hosts.len() > 1 {
+            let batch = execute_tasks_multi_host(
+                strategy,
+                &play.tasks,
+                &hosts,
+                &self.registry,
+                ctx,
+                &mut host_states,
+            )?;
+            host_results.extend(batch);
+        } else {
+            // Single-host or zero-host — fall back to the original per-host loop.
+            for host in &hosts {
+                let state = host_states.get_mut(host).unwrap();
+                let results =
+                    self.run_task_list(&play.tasks, host, ctx, state, &task_executor)?;
+                host_results.insert(host.clone(), results);
+            }
         }
 
         // Run handlers (triggered hosts not tracked in Phase 1 — run all).

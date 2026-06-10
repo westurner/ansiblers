@@ -1,0 +1,32 @@
+[package]
+name = "ansiblers-molecule"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Multi-node test isolation and orchestration for ansiblers (Phase 2)"
+
+[[bin]]
+name = "ransible-molecule"
+path = "src/main.rs"
+
+[dependencies]
+ansiblers-core = { workspace = true }
+ansiblers-parser = { workspace = true }
+ansiblers-executor = { workspace = true }
+ansiblers-modules = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+clap = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+[dev-dependencies]
+rstest = { workspace = true }
+insta = { workspace = true }
+tempfile = { workspace = true }

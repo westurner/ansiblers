@@ -9,6 +9,8 @@ members = [
     "crates/ansiblers-executor",
     "crates/ansiblers-modules",
     "crates/ansiblers-playbook",
+    "crates/ansiblers-molecule",
+    "crates/ansiblers-compat",
     "tests",
 ]
 
@@ -21,33 +23,42 @@ authors = ["ansiblers contributors"]
 
 [workspace.dependencies]
 # Internal crates
-ansiblers-core      = { path = "crates/ansiblers-core" }
-ansiblers-parser    = { path = "crates/ansiblers-parser" }
+ansiblers-core = { path = "crates/ansiblers-core" }
+ansiblers-parser = { path = "crates/ansiblers-parser" }
 ansiblers-inventory = { path = "crates/ansiblers-inventory" }
-ansiblers-vars      = { path = "crates/ansiblers-vars" }
+ansiblers-vars = { path = "crates/ansiblers-vars" }
 ansiblers-templates = { path = "crates/ansiblers-templates" }
-ansiblers-executor  = { path = "crates/ansiblers-executor" }
-ansiblers-modules   = { path = "crates/ansiblers-modules" }
-ansiblers-it        = { path = "tests" }
+ansiblers-executor = { path = "crates/ansiblers-executor" }
+ansiblers-modules = { path = "crates/ansiblers-modules" }
+ansiblers-molecule = { path = "crates/ansiblers-molecule" }
+ansiblers-compat = { path = "crates/ansiblers-compat" }
+ansiblers-it = { path = "tests" }
 
 # Template engine (workspace member symlinked in src/)
 jinja2rs = { path = "../jinja2rs" }
 minijinja = { path = "../minijinja/minijinja", features = [
-    "builtins", "debug", "deserialization", "macros",
-    "multi_template", "serde", "loader",
+    "builtins",
+    "debug",
+    "deserialization",
+    "macros",
+    "multi_template",
+    "serde",
+    "loader",
 ] }
-minijinja-contrib = { path = "../minijinja/minijinja-contrib", features = ["pycompat"] }
+minijinja-contrib = { path = "../minijinja/minijinja-contrib", features = [
+    "pycompat",
+] }
 
 # Python interop (required by jinja2rs)
 pyo3 = { version = "0.22", features = [] }
 
 # Serialisation
-serde      = { version = "1", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
 
 # Error handling
-anyhow    = "1"
+anyhow = "1"
 thiserror = "2"
 
 # Async runtime
@@ -57,22 +68,22 @@ tokio = { version = "1", features = ["full"] }
 clap = { version = "4.5", features = ["derive"] }
 
 # Utilities
-regex               = "1"
-tracing             = "0.1"
-tracing-subscriber  = { version = "0.3", features = ["env-filter"] }
-indexmap            = { version = "2", features = ["serde"] }
+regex = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+indexmap = { version = "2", features = ["serde"] }
 
 # Testing
-rstest   = "0.23"
-insta    = { version = "1", features = ["yaml", "json"] }
-mockall  = "0.13"
+rstest = "0.23"
+insta = { version = "1", features = ["yaml", "json"] }
+mockall = "0.13"
 tempfile = "3"
 
 [profile.release]
-opt-level     = 3
-lto           = true
+opt-level = 3
+lto = true
 codegen-units = 1
-strip         = true
+strip = true
 
 [profile.dev.package.insta]
 opt-level = 3

@@ -1,9 +1,9 @@
 [package]
-name        = "ansiblers-it"
-version     = "0.1.0"
-edition.workspace    = true
+name = "ansiblers-it"
+version = "0.1.0"
+edition.workspace = true
 rust-version.workspace = true
-license.workspace    = true
+license.workspace = true
 repository.workspace = true
 description = "Integration tests for ansiblers"
 
@@ -20,21 +20,31 @@ path = "integration/test_inventory.rs"
 name = "test_playbook_execution"
 path = "integration/test_playbook_execution.rs"
 
+[[test]]
+name = "test_phase2_modules"
+path = "integration/test_phase2_modules.rs"
+
+[[test]]
+name = "test_molecule"
+path = "integration/test_molecule.rs"
+
 [lib]
 # Minimal lib needed so Cargo recognises this as a library crate.
 name = "ansiblers_it"
 path = "src/lib.rs"
 
 [dependencies]
-ansiblers-core      = { workspace = true }
-ansiblers-parser    = { workspace = true }
+ansiblers-core = { workspace = true }
+ansiblers-parser = { workspace = true }
 ansiblers-inventory = { workspace = true }
-ansiblers-vars      = { workspace = true }
-ansiblers-executor  = { workspace = true }
-ansiblers-modules   = { workspace = true }
+ansiblers-vars = { workspace = true }
+ansiblers-executor = { workspace = true }
+ansiblers-modules = { workspace = true }
+ansiblers-molecule = { workspace = true }
 ansiblers-templates = { workspace = true }
-serde_json          = { workspace = true }
+serde_json = { workspace = true }
 
 [dev-dependencies]
-rstest   = { workspace = true }
-insta    = { workspace = true }
+rstest = { workspace = true }
+insta = { workspace = true }
+tempfile = { workspace = true }

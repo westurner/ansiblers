@@ -1,0 +1,15 @@
+- name: Multi-host play
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Echo hostname
+      shell: echo "running on {{ inventory_hostname }}"
+      register: hostname_result
+
+    - name: Set a per-host fact
+      set_fact:
+        host_msg: "processed_{{ inventory_hostname }}"
+
+    - name: Debug per-host fact
+      debug:
+        msg: "{{ host_msg }}"

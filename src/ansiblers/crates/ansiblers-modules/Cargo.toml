@@ -5,17 +5,26 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Module implementations for ansiblers (shell, command, debug, set_fact, fail)"
+description = "Module implementations for ansiblers (shell, command, debug, set_fact, fail, file, copy, stat)"
+
+[features]
+# Enable in-process Python execution via PyO3 (faster, no subprocess fork).
+# When disabled, Python modules are always invoked via subprocess.
+native-python = ["pyo3"]
 
 [dependencies]
-ansiblers-core = { workspace = true }
+ansiblers-core      = { workspace = true }
 ansiblers-templates = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-anyhow = { workspace = true }
-thiserror = { workspace = true }
-tokio = { workspace = true }
+serde               = { workspace = true }
+serde_json          = { workspace = true }
+anyhow              = { workspace = true }
+thiserror           = { workspace = true }
+tokio               = { workspace = true }
+tempfile            = { workspace = true }
+# Optional: only compiled when the `native-python` feature is enabled.
+pyo3 = { version = "0.22", features = ["auto-initialize"], optional = true }
 
 [dev-dependencies]
-rstest = { workspace = true }
-insta = { workspace = true }
+rstest   = { workspace = true }
+insta    = { workspace = true }
+tempfile = { workspace = true }
