@@ -32,8 +32,8 @@ Most commonly used commands and patterns for ansiblers development:
 ```bash
 # Testing
 cargo test --all                                          # Run all unit tests
-cargo llvm-cov --all --lcov                              # Test with coverage (branch coverage)
-cargo llvm-cov report --html                             # Generate HTML coverage report
+cargo +nightly llvm-cov --all --lcov                      # Test with branch coverage (requires nightly)
+cargo +nightly llvm-cov report --html                     # Generate HTML coverage report with branches
 cargo test --all -- --nocapture --test-threads=1        # Debug tests with output
 
 # Linting & Formatting
@@ -74,7 +74,8 @@ docker run --rm -v $(pwd):/work ansiblers-test cargo test
 **Critical Reminders:**
 
 - **Licensing**: GPLv3 compatible only - check new dependencies
-- **Coverage**: 75% line, 60% branch minimum (checked in CI)
+- **Coverage**: 75% line, 60% branch minimum (checked in CI with nightly)
+- **Nightly Required**: Branch coverage analysis requires `cargo +nightly`
 - **No trailing whitespace**: Ansible convention; enforced in PRs
 - **Line limit**: 160 characters (standard Rust is 100, but we match Ansible)
 - **rstest fixtures**: Use for parametrization and test data reuse
@@ -88,6 +89,10 @@ docker run --rm -v $(pwd):/work ansiblers-test cargo test
 rustup update
 rustup component add rustfmt clippy
 rustup toolchain install stable
+
+# Install nightly toolchain (REQUIRED for branch coverage with llvm-cov)
+rustup toolchain install nightly
+rustup component add rustfmt clippy --toolchain nightly
 
 # Coverage tools
 cargo install cargo-llvm-cov
@@ -103,6 +108,8 @@ docker --version || podman --version
 # Python 3.10+ (for Ansible compatibility testing)
 python3 --version
 ```
+
+**Note**: The dev container (`.devcontainer/`) has all of these pre-installed, including nightly.
 
 ### Project Setup
 
@@ -192,21 +199,23 @@ cargo test --doc
 
 ```bash
 # Generate coverage report with branch coverage
-cargo llvm-cov --all --lcov --output-path lcov.info
+cargo +nightly llvm-cov --all --lcov --output-path lcov.info
 
-# View HTML coverage report
-cargo llvm-cov report --html
+# View HTML coverage report with branch coverage
+cargo +nightly llvm-cov report --html
 open target/llvm-cov/html/index.html
 
-# Check coverage thresholds
-cargo llvm-cov report --fail-under-lines 75 --fail-under-branches 60
+# Check branch coverage thresholds
+cargo +nightly llvm-cov report --fail-under-lines 75 --fail-under-branches 60
 
-# Per-crate coverage
-cargo llvm-cov --package ansiblers-core report --html
+# Per-crate branch coverage
+cargo +nightly llvm-cov --package ansiblers-core report --html
 
 # Coverage with specific tests
-cargo llvm-cov --all --test integration_tests --lcov
+cargo +nightly llvm-cov --all --test integration_tests --lcov
 ```
+
+**Note**: Branch coverage requires `rustup nightly`. The dev container includes nightly by default.
 
 ### Snapshot Testing (cargo-insta)
 

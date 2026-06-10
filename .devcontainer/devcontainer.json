@@ -1,0 +1,228 @@
+{
+  "name": "Ansiblers Development Container",
+  //"image": "mcr.microsoft.com/devcontainers/rust:2-trixie",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  
+  // Features to install
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:3.0.1": {
+      "version": "latest",
+      "moby": false,
+      "dockerDashComposeVersion": "latest"
+    }
+  },
+
+  "runArgs": [
+  		// ## Rootless containers with podman
+		// If a wrapper script also sets these parameters, they are redundant
+		// if settings.json has e.g.: dev.containers.dockerPath="path_to/podman-rootless",
+		"--userns=keep-id", "--security-opt=label=disable",
+
+		// ## Logging verbosity
+		"--log-level=debug",
+
+		// ## Container Runtimes
+		// "--runtime crun",  // podman errors with: "unknown flag"
+
+		// ## Networking
+		"--net=host",
+
+		// ## IPC: Interprocess Communication
+		// $ man podman-run 2>/dev/null | grep -E '^\s+--ipc=' -A 21
+		// > • host: use the host's shared memory, semaphores, and message queues inside the container. Note: the host mode gives
+        // >   the container full access to local shared memory and is therefore considered insecure.
+		//"--ipc=host"
+		// - [ ] TODO: is ipc=host necessary for X11 apps?
+		// - [ ] TODO: test less permissive --ipc= parameters for rootless containers 
+  ],
+
+  // Workspace mount
+  //"workspaceFolder": "/workspace",
+  //"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+
+  // Environment variables
+  "remoteEnv": {
+    "RUST_BACKTRACE": "1",
+    "CARGO_TERM_COLOR": "always",
+    "HISTFILE": "/home/vscode/.bash_history",
+    "DOCKER_BUILDKIT": "1"
+  },
+
+  // User configuration
+  "remoteUser": "vscode",
+  "containerUser": "vscode",
+
+  // Port forwarding for any local dev servers
+  "forwardPorts": [
+    3000,  // For any local test servers
+    8080,
+    9000
+  ],
+  "portsAttributes": {
+    "3000": {
+      "label": "Dev Server",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Alternative Server",
+      "onAutoForward": "notify"
+    },
+    "9000": {
+      "label": "Debug/Profiling",
+      "onAutoForward": "notify"
+    }
+  },
+
+  // VS Code extensions to install
+  "customizations": {
+    "vscode": {
+      // "extensions": [
+      //   // Rust development
+      //   "rust-lang.rust-analyzer",
+      //   "vadimcn.vscode-lldb",
+      //   "serayuzgur.crates",
+      //   "tamasfe.even-better-toml",
+      //   "bungcip.better-toml",
+        
+      //   // Testing and debugging
+      //   "Hbenl.vscode-test-explorer",
+      //   "davidanson.vscode-markdownlint",
+        
+      //   // Git and version control
+      //   "eamodio.gitlens",
+      //   "donjayamanne.githistory",
+        
+      //   // Code quality and formatting
+      //   "esbenp.prettier-vscode",
+      //   "charliermarsh.ruff",
+        
+      //   // Documentation
+      //   "yzhang.markdown-all-in-one",
+      //   "bierner.markdown-preview-github-styles",
+        
+      //   // Container/Docker
+      //   "ms-azuretools.vscode-docker",
+        
+      //   // Productivity
+      //   "ms-vscode.makefile-tools",
+      //   "gruntfuggly.todo-tree",
+      //   "alefragnani.bookmarks"
+      // ],
+      // "extensions": [
+      //   "ms-vscode-remote.remote-containers",
+      //   "ms-azuretools.vscode-containers"
+      // ],
+
+      "settings": {
+        // Rust analyzer settings
+        "rust-analyzer.checkOnSave.command": "clippy",
+        "rust-analyzer.checkOnSave.extraArgs": ["--all-targets", "--", "-D", "warnings"],
+        "rust-analyzer.files.excludeDirs": [
+          "target",
+          ".cargo",
+          "reports",
+          "src/ansible"
+        ],
+        "rust-analyzer.linkedProjects": [
+          //"/workspace/Cargo.toml"
+        ],
+        
+        // Editor settings
+        "editor.formatOnSave": true,
+        // "editor.defaultFormatter": "rust-lang.rust-analyzer",
+        // "[rust]": {
+        //   "editor.defaultFormatter": "rust-lang.rust-analyzer",
+        //   "editor.formatOnSave": true
+        // },
+        "editor.rulers": [100, 160],
+        "editor.wordWrap": "on",
+        
+        // Formatting
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        
+        // Terminal settings
+        // "terminal.integrated.defaultProfile.linux": "bash",
+        // "terminal.integrated.profiles.linux": {
+        //   "bash": {
+        //     "path": "/bin/bash",
+        //     "icon": "terminal-bash"
+        //   }
+        // },
+        
+        // // Test explorer
+        // "testExplorer.onStart": "none",
+        
+        // Search exclude patterns
+        "search.exclude": {
+          "**/target": true,
+          "**/.cargo": true,
+          "**/reports": true,
+          "**/src/ansible": true
+        },
+        "files.watcherExclude": {
+          "**/target/**": true,
+          "**/.cargo/**": true,
+          "**/reports/**": true,
+          "**/src/ansible/**": true
+        },
+        
+        // File associations
+        "files.associations": {
+          "*.yml": "yaml",
+          "*.yaml": "yaml",
+          "Cargo.toml": "toml"
+        },
+        
+        // Markdown settings
+        "markdown.preview.fontSize": 14,
+        
+        // Tab settings
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+        "[json]": {
+          "editor.tabSize": 2
+        },
+        "[yaml]": {
+          "editor.tabSize": 2
+        }
+      }
+    }
+  },
+
+  // On-create runs DURING build (can take longer)
+  "onCreateCommand": "bash /usr/local/bin/on-create.sh",
+
+  // Post-create runs AFTER container starts (must be fast < 30 sec)
+  //"postCreateCommand": "bash /usr/local/bin/post-create.sh",
+
+  // Mounts for caching
+  "mounts": [
+    "source=ansiblers-cargo-cache,target=/usr/local/cargo,type=volume",
+    "source=ansiblers-rustup-cache,target=/home/vscode/.rustup,type=volume",
+    //"source=vscode-ext-cache,target=/home/vscode/.vscode-server/extensions,type=volume"
+  ],
+
+  // Docker compose alternative (optional)
+  // "dockerComposeFile": "",
+  // "service": "",
+
+  // Need privileged mode for Docker-in-Docker to function properly
+  //"privileged": true,
+
+  // Override entrypoint (optional)
+  //"overrideCommand": false,
+
+  // Update remote user UID/GID to match local user
+  //"updateRemoteUserUID": false
+
+
+  // Additional labels for the container
+  // "labels": {
+  //   "com.ansiblers.dev": "true",
+  //   "com.ansiblers.version": "0.1.0"
+  // }
+}
