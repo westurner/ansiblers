@@ -1,7 +1,7 @@
 //! Integration tests: inventory loading (INI and YAML).
 
-use ansiblers_it::fixture_path;
 use ansiblers_inventory::{load_inventory, InlineFormat, InlineInventoryLoader, InventoryLoader};
+use ansiblers_it::fixture_path;
 use rstest::rstest;
 
 #[rstest]
@@ -10,8 +10,7 @@ use rstest::rstest;
 #[case("simple.yml")]
 fn test_load_fixture_inventory(#[case] filename: &str) {
     let path = fixture_path(&format!("inventories/{filename}"));
-    let inv = load_inventory(&path)
-        .unwrap_or_else(|e| panic!("failed to load {filename}: {e}"));
+    let inv = load_inventory(&path).unwrap_or_else(|e| panic!("failed to load {filename}: {e}"));
     assert!(!inv.hosts.is_empty(), "{filename} should have hosts");
 }
 
@@ -47,11 +46,7 @@ fn test_inventory_matching_hosts_all() {
 #[rstest]
 #[case("web1", "webservers", true)]
 #[case("db1", "webservers", false)]
-fn test_host_group_membership(
-    #[case] host: &str,
-    #[case] group: &str,
-    #[case] expected: bool,
-) {
+fn test_host_group_membership(#[case] host: &str, #[case] group: &str, #[case] expected: bool) {
     let path = fixture_path("inventories/with_groups.ini");
     let inv = load_inventory(&path).unwrap();
     let h = inv.get_host(host).unwrap();
@@ -61,7 +56,9 @@ fn test_host_group_membership(
 #[test]
 fn test_inline_ini_loader() {
     let ini = "[webservers]\nweb1\nweb2\n";
-    let loader = InlineInventoryLoader { format: InlineFormat::Ini };
+    let loader = InlineInventoryLoader {
+        format: InlineFormat::Ini,
+    };
     let inv = loader.load(ini).unwrap();
     assert!(inv.hosts.contains_key("web1"));
 }

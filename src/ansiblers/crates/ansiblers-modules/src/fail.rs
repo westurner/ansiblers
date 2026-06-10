@@ -1,7 +1,7 @@
 //! `fail` module — immediately fails the task with a custom message.
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, TaskResult};
+use anyhow::Result;
 
 use crate::registry::{ModuleArgs, ModuleInvoker};
 

@@ -2,8 +2,8 @@
 
 use std::collections::HashMap;
 
-use anyhow::{Context, Result};
 use ansiblers_core::Value;
+use anyhow::{Context, Result};
 use jinja2rs::compat::{AnsibleMode, CompatMode};
 use jinja2rs::Environment;
 
@@ -35,11 +35,7 @@ impl AnsibleTemplateEngine {
 
     /// Render a `Value` recursively — strings are templated, other types
     /// are returned unchanged.  Dicts and arrays are recursed into.
-    pub fn render_value(
-        &self,
-        value: &Value,
-        vars: &HashMap<String, Value>,
-    ) -> Result<Value> {
+    pub fn render_value(&self, value: &Value, vars: &HashMap<String, Value>) -> Result<Value> {
         match value {
             Value::String(s) => {
                 let rendered = self.render(s, vars)?;
@@ -53,9 +49,7 @@ impl AnsibleTemplateEngine {
             Value::Object(obj) => {
                 let rendered: Result<serde_json::Map<_, _>> = obj
                     .iter()
-                    .map(|(k, v)| {
-                        self.render_value(v, vars).map(|rv| (k.clone(), rv))
-                    })
+                    .map(|(k, v)| self.render_value(v, vars).map(|rv| (k.clone(), rv)))
                     .collect();
                 Ok(Value::Object(rendered?))
             }
@@ -126,7 +120,10 @@ mod tests {
             .collect();
         let template_val = Value::Object({
             let mut m = serde_json::Map::new();
-            m.insert("msg".to_string(), Value::String("{{ greeting }}".to_string()));
+            m.insert(
+                "msg".to_string(),
+                Value::String("{{ greeting }}".to_string()),
+            );
             m
         });
         let rendered = render_value(&template_val, &v).unwrap();
@@ -135,10 +132,7 @@ mod tests {
 
     #[test]
     fn test_default_filter() {
-        let result = render_string(
-            "{{ missing | default('fallback') }}",
-            &HashMap::new(),
-        );
+        let result = render_string("{{ missing | default('fallback') }}", &HashMap::new());
         // Ansible's default filter provides a fallback for undefined vars.
         match result {
             Ok(s) => assert_eq!(s, "fallback"),

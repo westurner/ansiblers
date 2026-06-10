@@ -14,7 +14,10 @@ fn executor() -> PlayExecutor {
 }
 
 fn local_ctx() -> ExecutionContext {
-    ExecutionContext::new(Arc::new(Inventory::default()), std::collections::HashMap::new())
+    ExecutionContext::new(
+        Arc::new(Inventory::default()),
+        std::collections::HashMap::new(),
+    )
 }
 
 #[rstest]
@@ -23,8 +26,7 @@ fn local_ctx() -> ExecutionContext {
 #[case("with_blocks.yml")]
 fn test_execute_fixture_playbook(#[case] filename: &str) {
     let path = fixture_path(&format!("playbooks/{filename}"));
-    let pb = parse_playbook(&path)
-        .unwrap_or_else(|e| panic!("parse {filename}: {e}"));
+    let pb = parse_playbook(&path).unwrap_or_else(|e| panic!("parse {filename}: {e}"));
     let mut ctx = local_ctx();
     let result = executor()
         .run_playbook(&pb, &mut ctx)
@@ -41,10 +43,7 @@ fn test_variable_register_and_use() {
     assert!(result.success);
     // set_fact should have stored 'computed'
     let fact = ctx.get_fact("localhost", "computed");
-    assert!(
-        fact.is_some(),
-        "set_fact should have set 'computed' fact"
-    );
+    assert!(fact.is_some(), "set_fact should have set 'computed' fact");
 }
 
 #[test]
@@ -56,9 +55,15 @@ fn test_block_rescue_sets_fact() {
     // Rescue should recover from the failure
     assert!(result.success, "block rescue should recover");
     let rescued = ctx.get_fact("localhost", "rescued");
-    assert!(rescued.is_some(), "rescue task should have set 'rescued' fact");
+    assert!(
+        rescued.is_some(),
+        "rescue task should have set 'rescued' fact"
+    );
     let cleanup = ctx.get_fact("localhost", "cleanup_done");
-    assert!(cleanup.is_some(), "always task should have set 'cleanup_done' fact");
+    assert!(
+        cleanup.is_some(),
+        "always task should have set 'cleanup_done' fact"
+    );
 }
 
 #[test]
@@ -73,9 +78,12 @@ fn test_extra_vars_override_play_vars() {
       register: r
 "#;
     let pb = ansiblers_parser::parse_playbook_str(yaml, None).unwrap();
-    let extra = [("greeting".to_string(), Value::String("extra_hello".to_string()))]
-        .into_iter()
-        .collect();
+    let extra = [(
+        "greeting".to_string(),
+        Value::String("extra_hello".to_string()),
+    )]
+    .into_iter()
+    .collect();
     let mut ctx = ExecutionContext::new(Arc::new(Inventory::default()), extra);
     executor().run_playbook(&pb, &mut ctx).unwrap();
     let r = ctx.get_var("r").unwrap();

@@ -2,8 +2,8 @@
 
 use std::process::Command;
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, TaskResult};
+use anyhow::Result;
 
 use crate::registry::{ModuleArgs, ModuleInvoker};
 
@@ -87,7 +87,10 @@ mod tests {
     fn test_command_true() {
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("_raw_params".to_string(), Value::String("/bin/true".to_string()));
+        args.insert(
+            "_raw_params".to_string(),
+            Value::String("/bin/true".to_string()),
+        );
         let r = CommandModule
             .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
             .unwrap();

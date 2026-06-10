@@ -2,10 +2,10 @@
 
 use std::collections::HashMap;
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, HostState, TaskResult};
 use ansiblers_modules::ModuleRegistry;
 use ansiblers_parser::{Block, Play, Playbook, TaskNode};
+use anyhow::Result;
 use tracing::{error, info, warn};
 
 use crate::task::TaskExecutor;
@@ -92,8 +92,7 @@ impl PlayExecutor {
         // Execute task list for each host.
         for host in &hosts {
             let state = host_states.get_mut(host).unwrap();
-            let results =
-                self.run_task_list(&play.tasks, host, ctx, state, &task_executor)?;
+            let results = self.run_task_list(&play.tasks, host, ctx, state, &task_executor)?;
             host_results.insert(host.clone(), results);
         }
 
@@ -106,10 +105,7 @@ impl PlayExecutor {
                 }
                 for handler in &play.handlers {
                     let result = task_executor.run(handler, host, ctx)?;
-                    host_results
-                        .entry(host.clone())
-                        .or_default()
-                        .push(result);
+                    host_results.entry(host.clone()).or_default().push(result);
                 }
             }
         }
@@ -152,8 +148,7 @@ impl PlayExecutor {
                     results.push(result);
                 }
                 TaskNode::Block(block) => {
-                    let block_results =
-                        self.run_block(block, host, ctx, state, executor)?;
+                    let block_results = self.run_block(block, host, ctx, state, executor)?;
                     results.extend(block_results);
                 }
             }
@@ -173,16 +168,14 @@ impl PlayExecutor {
         let mut results = Vec::new();
 
         // Execute the main block.
-        let block_results =
-            self.run_task_list(&block.block, host, ctx, state, executor)?;
+        let block_results = self.run_task_list(&block.block, host, ctx, state, executor)?;
         let block_failed = state.failed;
         results.extend(block_results);
 
         // If block failed, run rescue (resetting failed state).
         if block_failed && !block.rescue.is_empty() {
             state.failed = false;
-            let rescue_results =
-                self.run_task_list(&block.rescue, host, ctx, state, executor)?;
+            let rescue_results = self.run_task_list(&block.rescue, host, ctx, state, executor)?;
             results.extend(rescue_results);
         }
 
@@ -190,8 +183,7 @@ impl PlayExecutor {
         if !block.always.is_empty() {
             let saved_failed = state.failed;
             state.failed = false;
-            let always_results =
-                self.run_task_list(&block.always, host, ctx, state, executor)?;
+            let always_results = self.run_task_list(&block.always, host, ctx, state, executor)?;
             results.extend(always_results);
             // Restore failed state if always didn't fail itself.
             if !state.failed {

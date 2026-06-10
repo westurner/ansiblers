@@ -1,7 +1,7 @@
 //! `set_fact` module — stores per-host facts in the execution context.
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, TaskResult};
+use anyhow::Result;
 
 use crate::registry::{ModuleArgs, ModuleInvoker};
 
@@ -15,7 +15,10 @@ impl ModuleInvoker for SetFactModule {
         ctx: &mut ExecutionContext,
     ) -> Result<TaskResult> {
         if args.args.is_empty() {
-            return Ok(TaskResult::failed(host, "set_fact requires at least one key=value pair"));
+            return Ok(TaskResult::failed(
+                host,
+                "set_fact requires at least one key=value pair",
+            ));
         }
 
         for (key, val) in &args.args {

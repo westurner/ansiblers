@@ -11,8 +11,7 @@ use rstest::rstest;
 #[case("with_loops.yml")]
 fn test_parse_fixture_playbook(#[case] filename: &str) {
     let path = fixture_path(&format!("playbooks/{filename}"));
-    let pb = parse_playbook(&path)
-        .unwrap_or_else(|e| panic!("failed to parse {filename}: {e}"));
+    let pb = parse_playbook(&path).unwrap_or_else(|e| panic!("failed to parse {filename}: {e}"));
     assert!(
         !pb.plays.is_empty(),
         "{filename} should have at least one play"
@@ -47,8 +46,5 @@ fn test_parse_variables_in_play() {
         play.vars.contains_key("greeting"),
         "play should have 'greeting' var"
     );
-    assert_eq!(
-        play.vars["greeting"].as_str().unwrap(),
-        "Hello"
-    );
+    assert_eq!(play.vars["greeting"].as_str().unwrap(), "Hello");
 }

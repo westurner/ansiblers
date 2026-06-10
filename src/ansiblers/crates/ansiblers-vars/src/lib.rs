@@ -1,5 +1,5 @@
-pub mod resolver;
 pub mod precedence;
+pub mod resolver;
 
-pub use resolver::VariableResolver;
 pub use precedence::VarScope;
+pub use resolver::VariableResolver;

@@ -152,10 +152,7 @@ mod tests {
         let mut r = StandaloneResolver::new();
         r.set(low, "myvar", Value::String("low_wins".to_string()));
         r.set(high, "myvar", Value::String(winner.to_string()));
-        assert_eq!(
-            r.get("myvar"),
-            Some(Value::String(winner.to_string()))
-        );
+        assert_eq!(r.get("myvar"), Some(Value::String(winner.to_string())));
     }
 
     #[test]

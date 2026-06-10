@@ -18,14 +18,13 @@
 
 use std::collections::HashMap;
 
-use anyhow::{anyhow, Context, Result};
 use ansiblers_core::{Group, Host, Inventory, Value};
+use anyhow::{anyhow, Context, Result};
 use serde_yaml::Value as YamlValue;
 
 /// Parse a YAML-format inventory string into an [`Inventory`].
 pub fn parse_yaml_inventory(content: &str) -> Result<Inventory> {
-    let root: YamlValue =
-        serde_yaml::from_str(content).context("parsing YAML inventory")?;
+    let root: YamlValue = serde_yaml::from_str(content).context("parsing YAML inventory")?;
     let mut inventory = Inventory::new();
     // Top-level must be a mapping (group_name → group_data).
     let top = root
@@ -62,9 +61,7 @@ fn parse_group(name: &str, val: &YamlValue, inventory: &mut Inventory) -> Result
     if let Some(YamlValue::Mapping(vars_map)) = map.get("vars") {
         for (k, v) in vars_map.iter() {
             if let Some(key) = k.as_str() {
-                group
-                    .vars
-                    .insert(key.to_string(), yaml_to_json(v)?);
+                group.vars.insert(key.to_string(), yaml_to_json(v)?);
             }
         }
     }

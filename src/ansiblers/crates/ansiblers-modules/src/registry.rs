@@ -3,8 +3,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, TaskResult};
+use anyhow::Result;
 
 use crate::command::CommandModule;
 use crate::debug::DebugModule;
@@ -21,7 +21,10 @@ pub struct ModuleArgs {
 
 impl ModuleArgs {
     pub fn new(args: HashMap<String, ansiblers_core::Value>) -> Self {
-        Self { args, task_name: None }
+        Self {
+            args,
+            task_name: None,
+        }
     }
 
     pub fn get_str(&self, key: &str) -> Option<&str> {

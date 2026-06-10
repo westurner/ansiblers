@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use anyhow::{anyhow, Context, Result};
 use ansiblers_core::Value;
+use anyhow::{anyhow, Context, Result};
 use serde_yaml::Value as YamlValue;
 
 use crate::ast::{Block, Handler, Play, Playbook, Task, TaskArgs, TaskNode, WhenExpr};
@@ -60,8 +60,7 @@ pub fn parse_playbook(path: &str) -> Result<Playbook> {
 
 /// Parse a playbook from an in-memory YAML string.
 pub fn parse_playbook_str(content: &str, path: Option<PathBuf>) -> Result<Playbook> {
-    let raw: Vec<YamlValue> =
-        serde_yaml::from_str(content).context("parsing playbook YAML")?;
+    let raw: Vec<YamlValue> = serde_yaml::from_str(content).context("parsing playbook YAML")?;
     let plays = raw
         .iter()
         .enumerate()
@@ -297,10 +296,7 @@ fn parse_when(map: &serde_yaml::Mapping) -> Option<WhenExpr> {
     }
 }
 
-fn parse_vars(
-    map: &serde_yaml::Mapping,
-    key: &str,
-) -> Result<HashMap<String, Value>> {
+fn parse_vars(map: &serde_yaml::Mapping, key: &str) -> Result<HashMap<String, Value>> {
     let Some(val) = map.get(key) else {
         return Ok(HashMap::new());
     };
@@ -343,10 +339,9 @@ fn get_bool(map: &serde_yaml::Mapping, key: &str) -> Option<bool> {
 
 /// Convert a serde_yaml::Value to serde_json::Value.
 pub(crate) fn yaml_to_json(val: &YamlValue) -> Result<Value> {
-    let json_str = serde_json::to_string(&serde_yaml::from_value::<serde_json::Value>(
-        val.clone(),
-    )?)
-    .context("serialising yaml value to json")?;
+    let json_str =
+        serde_json::to_string(&serde_yaml::from_value::<serde_json::Value>(val.clone())?)
+            .context("serialising yaml value to json")?;
     serde_json::from_str(&json_str).context("deserialising json value")
 }
 
@@ -437,9 +432,7 @@ mod tests {
     #[case("shell", "echo hello")]
     #[case("command", "/bin/true")]
     fn test_free_form_module(#[case] module: &str, #[case] cmd: &str) {
-        let yaml = format!(
-            "- hosts: all\n  tasks:\n    - {module}: {cmd}\n"
-        );
+        let yaml = format!("- hosts: all\n  tasks:\n    - {module}: {cmd}\n");
         let pb = parse_playbook_str(&yaml, None).unwrap();
         if let TaskNode::Task(task) = &pb.plays[0].tasks[0] {
             assert_eq!(task.module, module);

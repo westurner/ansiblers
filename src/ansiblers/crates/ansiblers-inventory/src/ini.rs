@@ -24,8 +24,8 @@
 
 use std::collections::HashMap;
 
-use anyhow::{anyhow, Result};
 use ansiblers_core::{Group, Host, Inventory, Value};
+use anyhow::{anyhow, Result};
 
 /// Parse an INI-format inventory string into an [`Inventory`].
 pub fn parse_ini_inventory(content: &str) -> Result<Inventory> {
@@ -46,9 +46,7 @@ pub fn parse_ini_inventory(content: &str) -> Result<Inventory> {
             // Ensure the group (or base group) exists.
             let base = section_base(current_section.as_deref().unwrap());
             if base != "all" && !inventory.groups.contains_key(base) {
-                inventory
-                    .groups
-                    .insert(base.to_string(), Group::new(base));
+                inventory.groups.insert(base.to_string(), Group::new(base));
             }
             continue;
         }

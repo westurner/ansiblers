@@ -2,12 +2,12 @@
 
 use std::collections::HashMap;
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, TaskResult, Value};
 use ansiblers_modules::{ModuleArgs, ModuleRegistry};
 use ansiblers_parser::{Task, TaskArgs};
 use ansiblers_templates::render_string;
 use ansiblers_vars::VariableResolver;
+use anyhow::Result;
 use tracing::{debug, info, warn};
 
 pub struct TaskExecutor<'reg> {
@@ -20,12 +20,7 @@ impl<'reg> TaskExecutor<'reg> {
     }
 
     /// Execute `task` for `host`, returning the task result.
-    pub fn run(
-        &self,
-        task: &Task,
-        host: &str,
-        ctx: &mut ExecutionContext,
-    ) -> Result<TaskResult> {
+    pub fn run(&self, task: &Task, host: &str, ctx: &mut ExecutionContext) -> Result<TaskResult> {
         let resolver = VariableResolver::new(ctx);
         let vars = resolver.merged(host);
 

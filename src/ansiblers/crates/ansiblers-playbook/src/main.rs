@@ -7,12 +7,12 @@ use std::collections::HashMap;
 use std::process;
 use std::sync::Arc;
 
-use anyhow::{Context, Result};
 use ansiblers_core::{ExecutionContext, Value};
 use ansiblers_executor::PlayExecutor;
 use ansiblers_inventory::load_inventory;
 use ansiblers_modules::ModuleRegistry;
 use ansiblers_parser::parse_playbook;
+use anyhow::{Context, Result};
 use clap::Parser;
 use tracing::{error, info};
 
@@ -98,8 +98,7 @@ fn main() {
 fn run(cli: Cli) -> Result<bool> {
     // Load inventory.
     let inventory = if let Some(inv_path) = &cli.inventory {
-        load_inventory(inv_path)
-            .with_context(|| format!("loading inventory '{inv_path}'"))?
+        load_inventory(inv_path).with_context(|| format!("loading inventory '{inv_path}'"))?
     } else {
         // Default: implicit localhost.
         ansiblers_core::Inventory::new()
@@ -117,8 +116,7 @@ fn run(cli: Cli) -> Result<bool> {
     for playbook_path in &cli.playbook {
         info!(playbook = %playbook_path, "loading playbook");
         let playbook =
-            parse_playbook(playbook_path)
-                .with_context(|| format!("parsing '{playbook_path}'"))?;
+            parse_playbook(playbook_path).with_context(|| format!("parsing '{playbook_path}'"))?;
 
         let result = executor
             .run_playbook(&playbook, &mut ctx)
@@ -156,10 +154,7 @@ fn print_play_recap(result: &ansiblers_executor::PlaybookResult) {
                 .iter()
                 .filter(|r| r.status == ansiblers_core::TaskStatus::Changed)
                 .count();
-            let failed = task_results
-                .iter()
-                .filter(|r| r.status.is_failed())
-                .count();
+            let failed = task_results.iter().filter(|r| r.status.is_failed()).count();
             let skipped = task_results
                 .iter()
                 .filter(|r| r.status == ansiblers_core::TaskStatus::Skipped)
@@ -195,8 +190,8 @@ fn parse_extra_vars(raw: &[String]) -> Result<HashMap<String, Value>> {
     for item in raw {
         // Try JSON object first.
         if item.trim_start().starts_with('{') {
-            let map: HashMap<String, Value> =
-                serde_json::from_str(item).with_context(|| format!("parsing --extra-vars JSON: {item}"))?;
+            let map: HashMap<String, Value> = serde_json::from_str(item)
+                .with_context(|| format!("parsing --extra-vars JSON: {item}"))?;
             vars.extend(map);
         } else {
             // key=value pair.

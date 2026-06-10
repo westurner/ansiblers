@@ -1,7 +1,7 @@
 //! `debug` module — prints messages or variable values.
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, TaskResult};
+use anyhow::Result;
 
 use crate::registry::{ModuleArgs, ModuleInvoker};
 
@@ -14,10 +14,7 @@ impl ModuleInvoker for DebugModule {
         host: &str,
         _ctx: &mut ExecutionContext,
     ) -> Result<TaskResult> {
-        let msg = args
-            .get_str("msg")
-            .unwrap_or("")
-            .to_string();
+        let msg = args.get_str("msg").unwrap_or("").to_string();
         let var = args.get_str("var");
 
         let output = if let Some(var_name) = var {

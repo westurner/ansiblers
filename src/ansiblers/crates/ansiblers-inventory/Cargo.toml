@@ -1,21 +1,21 @@
 [package]
-name        = "ansiblers-inventory"
-version     = "0.1.0"
-edition.workspace    = true
+name = "ansiblers-inventory"
+version = "0.1.0"
+edition.workspace = true
 rust-version.workspace = true
-license.workspace    = true
+license.workspace = true
 repository.workspace = true
 description = "Inventory loading for ansiblers (INI and YAML formats)"
 
 [dependencies]
 ansiblers-core = { workspace = true }
-serde          = { workspace = true }
-serde_json     = { workspace = true }
-serde_yaml     = { workspace = true }
-anyhow         = { workspace = true }
-regex          = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+anyhow = { workspace = true }
+regex = { workspace = true }
 
 [dev-dependencies]
-rstest   = { workspace = true }
-insta    = { workspace = true }
+rstest = { workspace = true }
+insta = { workspace = true }
 tempfile = { workspace = true }

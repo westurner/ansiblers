@@ -1,5 +1,5 @@
-use anyhow::{Context, Result};
 use ansiblers_core::Inventory;
+use anyhow::{Context, Result};
 
 use crate::ini::parse_ini_inventory;
 use crate::yaml::parse_yaml_inventory;
