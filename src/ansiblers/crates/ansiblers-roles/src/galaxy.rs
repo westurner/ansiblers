@@ -48,8 +48,7 @@ impl GalaxyRequirements {
         if content.trim().is_empty() {
             return Ok(Self::default());
         }
-        serde_yaml::from_str(content)
-            .map_err(|e| anyhow::anyhow!("parsing requirements.yml: {e}"))
+        serde_yaml::from_str(content).map_err(|e| anyhow::anyhow!("parsing requirements.yml: {e}"))
     }
 }
 

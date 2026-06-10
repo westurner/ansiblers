@@ -32,12 +32,18 @@ impl TestRunner {
         let workspace_root = std::env::var("CARGO_MANIFEST_DIR")
             .map(PathBuf::from)
             .unwrap_or_else(|_| std::env::current_dir().unwrap_or_default());
-        Self { config, workspace_root }
+        Self {
+            config,
+            workspace_root,
+        }
     }
 
     /// Create a runner with an explicit workspace root (useful in tests).
     pub fn with_root(config: RunConfig, workspace_root: PathBuf) -> Self {
-        Self { config, workspace_root }
+        Self {
+            config,
+            workspace_root,
+        }
     }
 
     // ------------------------------------------------------------------
@@ -58,7 +64,10 @@ impl TestRunner {
             &["clippy", "--all-targets", "--", "-D", "warnings"],
         ));
 
-        Ok(TestReport { suite: "sanity".into(), results })
+        Ok(TestReport {
+            suite: "sanity".into(),
+            results,
+        })
     }
 
     // ------------------------------------------------------------------
@@ -86,7 +95,10 @@ impl TestRunner {
         }
 
         let result = self.run_check("units", &args);
-        Ok(TestReport { suite: "units".into(), results: vec![result] })
+        Ok(TestReport {
+            suite: "units".into(),
+            results: vec![result],
+        })
     }
 
     // ------------------------------------------------------------------
@@ -125,7 +137,10 @@ impl TestRunner {
             results.push(self.run_check(&label, &check_args));
         }
 
-        Ok(TestReport { suite: "integration".into(), results })
+        Ok(TestReport {
+            suite: "integration".into(),
+            results,
+        })
     }
 
     // ------------------------------------------------------------------
@@ -173,7 +188,9 @@ mod tests {
     #[test]
     fn test_runner_new_does_not_panic() {
         let runner = TestRunner::new(RunConfig::default());
-        assert!(runner.workspace_root.is_absolute() || !runner.workspace_root.as_os_str().is_empty());
+        assert!(
+            runner.workspace_root.is_absolute() || !runner.workspace_root.as_os_str().is_empty()
+        );
     }
 
     #[test]

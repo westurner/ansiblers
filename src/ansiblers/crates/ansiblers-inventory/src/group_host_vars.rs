@@ -30,8 +30,8 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result};
 use ansiblers_core::{Inventory, Value};
+use anyhow::{Context, Result};
 use serde_yaml::Value as YamlValue;
 
 /// Merge `group_vars` and `host_vars` directories into an existing inventory.
@@ -39,10 +39,7 @@ use serde_yaml::Value as YamlValue;
 /// `search_paths` is a list of directories to search for `group_vars/` and
 /// `host_vars/` subdirectories (typically the inventory directory and the
 /// playbook directory).
-pub fn merge_group_and_host_vars(
-    inventory: &mut Inventory,
-    search_paths: &[&Path],
-) -> Result<()> {
+pub fn merge_group_and_host_vars(inventory: &mut Inventory, search_paths: &[&Path]) -> Result<()> {
     for &base in search_paths {
         let group_vars_dir = base.join("group_vars");
         let host_vars_dir = base.join("host_vars");
@@ -248,12 +245,19 @@ mod tests {
     #[test]
     fn test_group_vars_all() {
         let tmp = TempDir::new().unwrap();
-        write(tmp.path(), "group_vars/all.yml", "env: test\nregion: us-east\n");
+        write(
+            tmp.path(),
+            "group_vars/all.yml",
+            "env: test\nregion: us-east\n",
+        );
         let mut inv = Inventory::new();
         merge_group_and_host_vars(&mut inv, &[tmp.path()]).unwrap();
         let all = inv.groups.get("all").unwrap();
         assert_eq!(all.vars.get("env"), Some(&Value::String("test".into())));
-        assert_eq!(all.vars.get("region"), Some(&Value::String("us-east".into())));
+        assert_eq!(
+            all.vars.get("region"),
+            Some(&Value::String("us-east".into()))
+        );
     }
 
     #[test]
@@ -261,7 +265,8 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         write(tmp.path(), "group_vars/webservers.yml", "http_port: 80\n");
         let mut inv = Inventory::new();
-        inv.groups.insert("webservers".into(), Group::new("webservers"));
+        inv.groups
+            .insert("webservers".into(), Group::new("webservers"));
         merge_group_and_host_vars(&mut inv, &[tmp.path()]).unwrap();
         let g = inv.groups.get("webservers").unwrap();
         assert_eq!(g.vars.get("http_port"), Some(&Value::Number(80.into())));
@@ -275,27 +280,49 @@ mod tests {
         inv.hosts.insert("web1".into(), Host::new("web1"));
         merge_group_and_host_vars(&mut inv, &[tmp.path()]).unwrap();
         let h = inv.hosts.get("web1").unwrap();
-        assert_eq!(h.vars.get("ansible_user"), Some(&Value::String("deploy".into())));
+        assert_eq!(
+            h.vars.get("ansible_user"),
+            Some(&Value::String("deploy".into()))
+        );
     }
 
     #[test]
     fn test_host_vars_split_dir() {
         let tmp = TempDir::new().unwrap();
-        write(tmp.path(), "host_vars/web1/main.yml", "pkg_version: 1.2.3\n");
-        write(tmp.path(), "host_vars/web1/extra.yml", "debug_mode: false\n");
+        write(
+            tmp.path(),
+            "host_vars/web1/main.yml",
+            "pkg_version: 1.2.3\n",
+        );
+        write(
+            tmp.path(),
+            "host_vars/web1/extra.yml",
+            "debug_mode: false\n",
+        );
         let mut inv = Inventory::new();
         inv.hosts.insert("web1".into(), Host::new("web1"));
         merge_group_and_host_vars(&mut inv, &[tmp.path()]).unwrap();
         let h = inv.hosts.get("web1").unwrap();
-        assert_eq!(h.vars.get("pkg_version"), Some(&Value::String("1.2.3".into())));
+        assert_eq!(
+            h.vars.get("pkg_version"),
+            Some(&Value::String("1.2.3".into()))
+        );
         assert_eq!(h.vars.get("debug_mode"), Some(&Value::Bool(false)));
     }
 
     #[test]
     fn test_group_vars_split_dir() {
         let tmp = TempDir::new().unwrap();
-        write(tmp.path(), "group_vars/databases/main.yml", "db_port: 5432\n");
-        write(tmp.path(), "group_vars/databases/replication.yml", "replica_count: 2\n");
+        write(
+            tmp.path(),
+            "group_vars/databases/main.yml",
+            "db_port: 5432\n",
+        );
+        write(
+            tmp.path(),
+            "group_vars/databases/replication.yml",
+            "replica_count: 2\n",
+        );
         let mut inv = Inventory::new();
         merge_group_and_host_vars(&mut inv, &[tmp.path()]).unwrap();
         let g = inv.groups.get("databases").unwrap();

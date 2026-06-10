@@ -26,12 +26,19 @@ fn test_dockerfile_basic_stages() {
     build.copy(".", ".");
     build.run_cached(
         "cargo build --release",
-        &[("/usr/local/cargo/registry", "cargo-registry"), ("/app/target", "cargo-target")],
+        &[
+            ("/usr/local/cargo/registry", "cargo-registry"),
+            ("/app/target", "cargo-target"),
+        ],
     );
     builder.add_stage(build);
 
     let mut runtime = BuildStage::new("runtime", "debian:bookworm-slim");
-    runtime.copy_from("build", "/app/target/release/ransible-playbook", "/usr/local/bin/");
+    runtime.copy_from(
+        "build",
+        "/app/target/release/ransible-playbook",
+        "/usr/local/bin/",
+    );
     runtime.expose(22);
     runtime.env("RUST_LOG", "info");
     runtime.entrypoint(&["ransible-playbook"]);
@@ -40,7 +47,10 @@ fn test_dockerfile_basic_stages() {
     let text = builder.render();
 
     // Preamble
-    assert!(text.contains("# syntax=docker/dockerfile:1"), "missing BuildKit syntax directive");
+    assert!(
+        text.contains("# syntax=docker/dockerfile:1"),
+        "missing BuildKit syntax directive"
+    );
 
     // Build stage
     assert!(text.contains("FROM rust:1.78-slim AS build"));
@@ -51,7 +61,9 @@ fn test_dockerfile_basic_stages() {
 
     // Runtime stage
     assert!(text.contains("FROM debian:bookworm-slim AS runtime"));
-    assert!(text.contains("COPY --from=build /app/target/release/ransible-playbook /usr/local/bin/"));
+    assert!(
+        text.contains("COPY --from=build /app/target/release/ransible-playbook /usr/local/bin/")
+    );
     assert!(text.contains("EXPOSE 22"));
     assert!(text.contains("ENV RUST_LOG=info"));
     assert!(text.contains(r#"ENTRYPOINT ["ransible-playbook"]"#));
@@ -77,12 +89,8 @@ fn test_dockerfile_write_to_file() {
 
 #[rstest]
 #[case("ubuntu:22.04", "runner", "apt-get install -y curl")]
-#[case("alpine:3.20",  "runner", "apk add --no-cache curl")]
-fn test_dockerfile_parametrized_stages(
-    #[case] base: &str,
-    #[case] name: &str,
-    #[case] cmd: &str,
-) {
+#[case("alpine:3.20", "runner", "apk add --no-cache curl")]
+fn test_dockerfile_parametrized_stages(#[case] base: &str, #[case] name: &str, #[case] cmd: &str) {
     let mut stage = BuildStage::new(name, base);
     stage.run(cmd);
     let text = stage.render();
@@ -99,7 +107,10 @@ fn test_c2w_output_path() {
     let cfg = C2wConfig::new("myimage:v1.0")
         .output_dir(PathBuf::from("/dist/wasm"))
         .target_name("ransible-playbook");
-    assert_eq!(cfg.output_path(), PathBuf::from("/dist/wasm/ransible-playbook.wasm"));
+    assert_eq!(
+        cfg.output_path(),
+        PathBuf::from("/dist/wasm/ransible-playbook.wasm")
+    );
 }
 
 #[test]
@@ -111,8 +122,10 @@ fn test_c2w_target_derived_from_image() {
 
 #[test]
 fn test_c2w_to_args_order() {
-    let cfg =
-        C2wConfig::new("img:v1").output_dir(PathBuf::from("/out")).target_name("app").extra_arg("--debug");
+    let cfg = C2wConfig::new("img:v1")
+        .output_dir(PathBuf::from("/out"))
+        .target_name("app")
+        .extra_arg("--debug");
     let args = cfg.to_args();
     assert_eq!(args[0], "--debug", "extra args should come first");
     assert_eq!(args[1], "img:v1", "image should be second");
@@ -151,10 +164,19 @@ fn test_jupyterlite_generate_structure() {
     scaffold.generate().unwrap();
 
     assert!(tmp.path().join("index.html").exists(), "index.html missing");
-    assert!(tmp.path().join("jupyter_lite_config.json").exists(), "config missing");
-    assert!(tmp.path().join("overrides.json").exists(), "overrides missing");
+    assert!(
+        tmp.path().join("jupyter_lite_config.json").exists(),
+        "config missing"
+    );
+    assert!(
+        tmp.path().join("overrides.json").exists(),
+        "overrides missing"
+    );
     assert!(tmp.path().join("files").is_dir(), "files/ dir missing");
-    assert!(tmp.path().join("extensions").is_dir(), "extensions/ dir missing");
+    assert!(
+        tmp.path().join("extensions").is_dir(),
+        "extensions/ dir missing"
+    );
     assert!(tmp.path().join("wasm").is_dir(), "wasm/ dir missing");
 }
 
@@ -191,7 +213,10 @@ fn test_jupyterlite_config_json_with_wasm() {
     let cfg = scaffold.config_json();
     let wasm = cfg["LiteBuildConfig"]["wasm_modules"].as_array().unwrap();
     assert_eq!(wasm.len(), 1);
-    assert!(wasm[0].as_str().unwrap().ends_with("ransible-playbook.wasm"));
+    assert!(wasm[0]
+        .as_str()
+        .unwrap()
+        .ends_with("ransible-playbook.wasm"));
 }
 
 #[test]

@@ -177,8 +177,16 @@ mod tests {
     #[test]
     fn test_batch_output_paths() {
         let batch = C2wBatch::new()
-            .add(C2wConfig::new("img1").output_dir(PathBuf::from("/out")).target_name("a"))
-            .add(C2wConfig::new("img2").output_dir(PathBuf::from("/out")).target_name("b"));
+            .add(
+                C2wConfig::new("img1")
+                    .output_dir(PathBuf::from("/out"))
+                    .target_name("a"),
+            )
+            .add(
+                C2wConfig::new("img2")
+                    .output_dir(PathBuf::from("/out"))
+                    .target_name("b"),
+            );
         let paths = batch.output_paths();
         assert_eq!(paths.len(), 2);
         assert!(paths[0].ends_with("a.wasm"));

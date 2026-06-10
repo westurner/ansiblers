@@ -31,7 +31,10 @@ fn test_group_vars_loaded_from_fixture_dir() {
 
     // group_vars/webservers.yml
     let ws = inv.groups.get("webservers").unwrap();
-    assert_eq!(ws.vars.get("http_port"), Some(&ansiblers_core::Value::Number(80.into())));
+    assert_eq!(
+        ws.vars.get("http_port"),
+        Some(&ansiblers_core::Value::Number(80.into()))
+    );
 
     // host_vars/web1.example.com.yml
     let web1 = inv.hosts.get("web1.example.com");
@@ -50,8 +53,16 @@ fn test_host_vars_override_group_vars() {
     let tmp = tempfile::TempDir::new().unwrap();
     std::fs::create_dir_all(tmp.path().join("group_vars")).unwrap();
     std::fs::create_dir_all(tmp.path().join("host_vars")).unwrap();
-    std::fs::write(tmp.path().join("group_vars/all.yml"), "server_role: generic\n").unwrap();
-    std::fs::write(tmp.path().join("host_vars/web1.yml"), "server_role: web_special\n").unwrap();
+    std::fs::write(
+        tmp.path().join("group_vars/all.yml"),
+        "server_role: generic\n",
+    )
+    .unwrap();
+    std::fs::write(
+        tmp.path().join("host_vars/web1.yml"),
+        "server_role: web_special\n",
+    )
+    .unwrap();
 
     let mut inv = Inventory::new();
     let mut web1 = Host::new("web1");
@@ -85,8 +96,15 @@ fn test_parse_dynamic_inventory_json() {
     assert!(inv.hosts.contains_key("web1"));
     assert!(inv.groups.contains_key("webservers"));
     let ws = inv.get_group("webservers").unwrap();
-    assert_eq!(ws.vars.get("http_port"), Some(&ansiblers_core::Value::Number(80.into())));
-    assert!(inv.get_group("all").unwrap().children.contains(&"webservers".to_string()));
+    assert_eq!(
+        ws.vars.get("http_port"),
+        Some(&ansiblers_core::Value::Number(80.into()))
+    );
+    assert!(inv
+        .get_group("all")
+        .unwrap()
+        .children
+        .contains(&"webservers".to_string()));
 }
 
 #[test]

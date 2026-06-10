@@ -53,7 +53,10 @@ pub fn run_coverage(cfg: CoverageConfig) -> Result<TestReport> {
     // Step 3: check thresholds
     results.push(check_thresholds(&cfg));
 
-    Ok(TestReport { suite: "coverage".into(), results })
+    Ok(TestReport {
+        suite: "coverage".into(),
+        results,
+    })
 }
 
 fn run_llvm_cov_lcov(cfg: &CoverageConfig) -> CheckResult {

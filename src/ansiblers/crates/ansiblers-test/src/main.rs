@@ -134,24 +134,38 @@ fn main() {
 fn run(cli: Cli) -> Result<TestReport> {
     match cli.command {
         Command::Sanity { crates } => {
-            let runner = TestRunner::new(RunConfig { json: cli.json, crates });
+            let runner = TestRunner::new(RunConfig {
+                json: cli.json,
+                crates,
+            });
             let report = runner.run_sanity()?;
             reporter::print_report(&report, cli.json);
             Ok(report)
         }
         Command::Units { crates, coverage } => {
-            let runner = TestRunner::new(RunConfig { json: cli.json, crates });
+            let runner = TestRunner::new(RunConfig {
+                json: cli.json,
+                crates,
+            });
             let report = runner.run_units(coverage)?;
             reporter::print_report(&report, cli.json);
             Ok(report)
         }
         Command::Integration { targets, docker } => {
-            let runner = TestRunner::new(RunConfig { json: cli.json, crates: targets });
+            let runner = TestRunner::new(RunConfig {
+                json: cli.json,
+                crates: targets,
+            });
             let report = runner.run_integration(docker)?;
             reporter::print_report(&report, cli.json);
             Ok(report)
         }
-        Command::Coverage { html, fail_under_lines, fail_under_branches, lcov_output } => {
+        Command::Coverage {
+            html,
+            fail_under_lines,
+            fail_under_branches,
+            lcov_output,
+        } => {
             let cfg = CoverageConfig {
                 html,
                 fail_under_lines,

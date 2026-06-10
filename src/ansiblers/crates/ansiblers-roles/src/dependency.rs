@@ -45,10 +45,7 @@ impl DependencyGraph {
 ///     println!("{}", role.name);
 /// }
 /// ```
-pub fn resolve_dependencies(
-    loader: &RoleLoader,
-    role_names: &[&str],
-) -> Result<DependencyGraph> {
+pub fn resolve_dependencies(loader: &RoleLoader, role_names: &[&str]) -> Result<DependencyGraph> {
     let mut graph = DependencyGraph::default();
     let mut visiting: HashSet<String> = HashSet::new();
 
@@ -126,9 +123,21 @@ mod tests {
     #[test]
     fn test_resolve_simple_dependency_order() {
         let tmp = TempDir::new().unwrap();
-        write(tmp.path(), "roles/common/tasks/main.yml", "- debug:\n    msg: common\n");
-        write(tmp.path(), "roles/app/tasks/main.yml", "- debug:\n    msg: app\n");
-        write(tmp.path(), "roles/app/meta/main.yml", "dependencies:\n  - role: common\n");
+        write(
+            tmp.path(),
+            "roles/common/tasks/main.yml",
+            "- debug:\n    msg: common\n",
+        );
+        write(
+            tmp.path(),
+            "roles/app/tasks/main.yml",
+            "- debug:\n    msg: app\n",
+        );
+        write(
+            tmp.path(),
+            "roles/app/meta/main.yml",
+            "dependencies:\n  - role: common\n",
+        );
 
         let loader = make_loader(&tmp);
         let graph = resolve_dependencies(&loader, &["app"]).unwrap();
@@ -140,11 +149,31 @@ mod tests {
     #[test]
     fn test_deduplication() {
         let tmp = TempDir::new().unwrap();
-        write(tmp.path(), "roles/base/tasks/main.yml", "- debug:\n    msg: base\n");
-        write(tmp.path(), "roles/a/tasks/main.yml", "- debug:\n    msg: a\n");
-        write(tmp.path(), "roles/a/meta/main.yml", "dependencies:\n  - role: base\n");
-        write(tmp.path(), "roles/b/tasks/main.yml", "- debug:\n    msg: b\n");
-        write(tmp.path(), "roles/b/meta/main.yml", "dependencies:\n  - role: base\n");
+        write(
+            tmp.path(),
+            "roles/base/tasks/main.yml",
+            "- debug:\n    msg: base\n",
+        );
+        write(
+            tmp.path(),
+            "roles/a/tasks/main.yml",
+            "- debug:\n    msg: a\n",
+        );
+        write(
+            tmp.path(),
+            "roles/a/meta/main.yml",
+            "dependencies:\n  - role: base\n",
+        );
+        write(
+            tmp.path(),
+            "roles/b/tasks/main.yml",
+            "- debug:\n    msg: b\n",
+        );
+        write(
+            tmp.path(),
+            "roles/b/meta/main.yml",
+            "dependencies:\n  - role: base\n",
+        );
 
         let loader = make_loader(&tmp);
         let graph = resolve_dependencies(&loader, &["a", "b"]).unwrap();
@@ -156,10 +185,26 @@ mod tests {
     #[test]
     fn test_cycle_detection() {
         let tmp = TempDir::new().unwrap();
-        write(tmp.path(), "roles/a/tasks/main.yml", "- debug:\n    msg: a\n");
-        write(tmp.path(), "roles/a/meta/main.yml", "dependencies:\n  - role: b\n");
-        write(tmp.path(), "roles/b/tasks/main.yml", "- debug:\n    msg: b\n");
-        write(tmp.path(), "roles/b/meta/main.yml", "dependencies:\n  - role: a\n");
+        write(
+            tmp.path(),
+            "roles/a/tasks/main.yml",
+            "- debug:\n    msg: a\n",
+        );
+        write(
+            tmp.path(),
+            "roles/a/meta/main.yml",
+            "dependencies:\n  - role: b\n",
+        );
+        write(
+            tmp.path(),
+            "roles/b/tasks/main.yml",
+            "- debug:\n    msg: b\n",
+        );
+        write(
+            tmp.path(),
+            "roles/b/meta/main.yml",
+            "dependencies:\n  - role: a\n",
+        );
 
         let loader = make_loader(&tmp);
         let result = resolve_dependencies(&loader, &["a"]);

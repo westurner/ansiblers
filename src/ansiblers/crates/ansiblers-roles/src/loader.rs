@@ -6,9 +6,9 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result};
 use ansiblers_core::Value;
 use ansiblers_parser;
+use anyhow::{Context, Result};
 use serde_yaml::Value as YamlValue;
 
 use crate::meta::RoleMeta;
@@ -95,10 +95,9 @@ impl RoleLoader {
 
     /// Load a role by name.
     pub fn load(&self, name: &str) -> Result<Role> {
-        let path = self
-            .role_path
-            .find(name)
-            .ok_or_else(|| anyhow::anyhow!("role '{}' not found in {:?}", name, self.role_path.dirs))?;
+        let path = self.role_path.find(name).ok_or_else(|| {
+            anyhow::anyhow!("role '{}' not found in {:?}", name, self.role_path.dirs)
+        })?;
 
         self.load_from_path(name, &path)
     }
@@ -256,7 +255,13 @@ fn load_handler_list(handlers_dir: &Path) -> Result<Vec<ansiblers_parser::Handle
     }
     let indented = content
         .lines()
-        .map(|l| if l.is_empty() || l.starts_with('#') { l.to_string() } else { format!("    {l}") })
+        .map(|l| {
+            if l.is_empty() || l.starts_with('#') {
+                l.to_string()
+            } else {
+                format!("    {l}")
+            }
+        })
         .collect::<Vec<_>>()
         .join("\n");
     let wrapped = format!("- hosts: all\n  gather_facts: false\n  handlers:\n{indented}");
@@ -266,8 +271,7 @@ fn load_handler_list(handlers_dir: &Path) -> Result<Vec<ansiblers_parser::Handle
 
 fn yaml_to_json(val: &YamlValue) -> Result<Value> {
     let s = serde_json::to_string(
-        &serde_yaml::from_value::<serde_json::Value>(val.clone())
-            .context("yaml to json")?,
+        &serde_yaml::from_value::<serde_json::Value>(val.clone()).context("yaml to json")?,
     )?;
     serde_json::from_str(&s).context("json parse")
 }
@@ -369,7 +373,11 @@ mod tests {
     #[test]
     fn test_load_role_meta() {
         let tmp = TempDir::new().unwrap();
-        write(tmp.path(), "roles/app/tasks/main.yml", "- debug:\n    msg: hi\n");
+        write(
+            tmp.path(),
+            "roles/app/tasks/main.yml",
+            "- debug:\n    msg: hi\n",
+        );
         write(
             tmp.path(),
             "roles/app/meta/main.yml",

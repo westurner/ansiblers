@@ -113,9 +113,7 @@ impl JupyterLiteScaffold {
             .map(|nb| {
                 let name = nb.path.file_name().unwrap_or_default().to_string_lossy();
                 let t = html_escape(&nb.title);
-                format!(
-                    r#"    <li><a href="lab/index.html?path={name}">{t}</a></li>"#,
-                )
+                format!(r#"    <li><a href="lab/index.html?path={name}">{t}</a></li>"#,)
             })
             .collect::<Vec<_>>()
             .join("\n");
@@ -152,7 +150,12 @@ impl JupyterLiteScaffold {
             .wheels
             .iter()
             .map(|w| {
-                let name = w.path.file_name().unwrap_or_default().to_string_lossy().into_owned();
+                let name = w
+                    .path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .into_owned();
                 if let Some(ver) = &w.version {
                     serde_json::json!({ "name": name, "version": ver })
                 } else {
@@ -218,7 +221,9 @@ impl JupyterLiteScaffold {
         // Copy notebooks
         for nb in &self.notebooks {
             if nb.path.exists() {
-                let dst = out.join("files").join(nb.path.file_name().unwrap_or_default());
+                let dst = out
+                    .join("files")
+                    .join(nb.path.file_name().unwrap_or_default());
                 std::fs::copy(&nb.path, dst)?;
             }
         }
@@ -226,7 +231,9 @@ impl JupyterLiteScaffold {
         // Copy wheels
         for whl in &self.wheels {
             if whl.path.exists() {
-                let dst = out.join("extensions").join(whl.path.file_name().unwrap_or_default());
+                let dst = out
+                    .join("extensions")
+                    .join(whl.path.file_name().unwrap_or_default());
                 std::fs::copy(&whl.path, dst)?;
             }
         }
@@ -267,7 +274,10 @@ mod tests {
     #[test]
     fn test_index_html_notebook_links() {
         let scaffold = JupyterLiteScaffold::new("Demo", PathBuf::from("/tmp/out")).add_notebook(
-            NotebookEntry { path: PathBuf::from("playbook.ipynb"), title: "Run Playbook".into() },
+            NotebookEntry {
+                path: PathBuf::from("playbook.ipynb"),
+                title: "Run Playbook".into(),
+            },
         );
         let html = scaffold.index_html();
         assert!(html.contains("playbook.ipynb"));

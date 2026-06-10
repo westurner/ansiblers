@@ -51,7 +51,10 @@ impl TestReport {
 
     /// Count of passed checks.
     pub fn passed(&self) -> usize {
-        self.results.iter().filter(|r| r.status == CheckStatus::Passed).count()
+        self.results
+            .iter()
+            .filter(|r| r.status == CheckStatus::Passed)
+            .count()
     }
 
     /// Count of failed / errored checks.
@@ -68,7 +71,10 @@ impl TestReport {
 /// Print the report to stdout in human or JSON format.
 pub fn print_report(report: &TestReport, json: bool) {
     if json {
-        println!("{}", serde_json::to_string_pretty(report).unwrap_or_default());
+        println!(
+            "{}",
+            serde_json::to_string_pretty(report).unwrap_or_default()
+        );
         return;
     }
 
@@ -78,7 +84,7 @@ pub fn print_report(report: &TestReport, json: bool) {
         let icon = match r.status {
             CheckStatus::Passed => "✓",
             CheckStatus::Failed => "✗",
-            CheckStatus::Error  => "⚠",
+            CheckStatus::Error => "⚠",
         };
         print!("  {icon}  {:40} {:>6}ms", r.name, r.elapsed_ms);
         if let Some(msg) = &r.message {

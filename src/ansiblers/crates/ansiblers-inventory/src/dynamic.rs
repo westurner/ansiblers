@@ -32,8 +32,8 @@
 
 use std::process::Command;
 
-use anyhow::{Context, Result};
 use ansiblers_core::{Group, Host, Inventory, Value};
+use anyhow::{Context, Result};
 
 /// Loads inventory from an external executable (dynamic inventory script).
 ///
@@ -65,7 +65,9 @@ impl DynamicInventoryScript {
             .args(&self.extra_args)
             .arg("--list")
             .output()
-            .with_context(|| format!("executing dynamic inventory script '{}'", self.script_path))?;
+            .with_context(|| {
+                format!("executing dynamic inventory script '{}'", self.script_path)
+            })?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
@@ -100,14 +102,11 @@ impl DynamicInventoryScript {
         }
 
         let stdout = String::from_utf8_lossy(&output.stdout);
-        let json: serde_json::Value = serde_json::from_str(stdout.trim())
-            .context("parsing --host JSON output")?;
+        let json: serde_json::Value =
+            serde_json::from_str(stdout.trim()).context("parsing --host JSON output")?;
 
         match json.as_object() {
-            Some(obj) => Ok(obj
-                .iter()
-                .map(|(k, v)| (k.clone(), v.clone()))
-                .collect()),
+            Some(obj) => Ok(obj.iter().map(|(k, v)| (k.clone(), v.clone())).collect()),
             None => Ok(std::collections::HashMap::new()),
         }
     }
@@ -133,11 +132,7 @@ pub fn parse_list_output(json_str: &str) -> Result<Inventory> {
         .get("_meta")
         .and_then(|m| m.get("hostvars"))
         .and_then(|hv| hv.as_object())
-        .map(|hv| {
-            hv.iter()
-                .map(|(k, v)| (k.clone(), v.clone()))
-                .collect()
-        })
+        .map(|hv| hv.iter().map(|(k, v)| (k.clone(), v.clone())).collect())
         .unwrap_or_default();
 
     for (key, value) in obj {
