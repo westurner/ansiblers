@@ -1,0 +1,5 @@
+---
+# group_vars/all.yml — variables available to all hosts
+env: staging
+owner: ops-team
+region: us-east-1

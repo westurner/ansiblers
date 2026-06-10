@@ -26,10 +26,14 @@
 //! The returned [`ansiblers_core::Inventory::host_vars`] method merges these
 //! tiers in the correct order.
 
+pub mod dynamic;
+pub mod group_host_vars;
 pub mod ini;
 pub mod loader;
 pub mod yaml;
 
+pub use dynamic::{parse_list_output, DynamicInventoryScript};
+pub use group_host_vars::{load_vars_file, merge_group_and_host_vars};
 pub use loader::{
     load_inventory, FileInventoryLoader, InlineFormat, InlineInventoryLoader, InventoryLoader,
 };

@@ -1,0 +1,5 @@
+---
+# host_vars/db1.example.com.yml
+ansible_user: dbadmin
+ansible_host: 10.0.1.1
+db_replica: false

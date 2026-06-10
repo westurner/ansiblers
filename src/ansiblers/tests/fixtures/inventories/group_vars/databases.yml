@@ -1,0 +1,5 @@
+---
+# group_vars/databases.yml
+db_port: 5432
+db_engine: postgresql
+server_role: db

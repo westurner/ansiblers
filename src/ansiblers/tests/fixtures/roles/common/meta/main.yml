@@ -1,0 +1,13 @@
+---
+# roles/common/meta/main.yml
+galaxy_info:
+  author: ansiblers-test
+  description: Common baseline role
+  license: GPL-3.0
+  platforms:
+    - name: Ubuntu
+      versions: ["22.04", "24.04"]
+    - name: Debian
+      versions: ["12"]
+
+dependencies: []

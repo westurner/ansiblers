@@ -1,0 +1,8 @@
+---
+# Simple role fixture: roles/common
+# tasks/main.yml
+
+- name: Ensure common packages marker exists
+  file:
+    path: /tmp/common_installed
+    state: touch

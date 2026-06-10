@@ -1,0 +1,6 @@
+---
+# group_vars/webservers.yml
+http_port: 80
+https_port: 443
+server_role: web
+nginx_version: "1.24"

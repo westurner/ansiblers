@@ -1,0 +1,4 @@
+---
+# roles/common/defaults/main.yml
+common_package_list: []
+common_user: nobody

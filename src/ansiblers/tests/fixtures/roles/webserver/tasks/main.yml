@@ -1,0 +1,11 @@
+---
+# roles/webserver/tasks/main.yml
+
+- name: Install nginx marker
+  file:
+    path: /tmp/nginx_installed
+    state: touch
+
+- name: Debug nginx version
+  debug:
+    msg: "nginx version={{ nginx_version | default('latest') }}"

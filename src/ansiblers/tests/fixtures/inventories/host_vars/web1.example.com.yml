@@ -1,0 +1,5 @@
+---
+# host_vars/web1.example.com.yml
+ansible_user: deploy
+ansible_host: 10.0.0.1
+custom_var: web1_specific

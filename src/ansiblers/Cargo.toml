@@ -12,6 +12,7 @@ members = [
     "crates/ansiblers-molecule",
     "crates/ansiblers-compat",
     "crates/ansiblers-sandbox",
+    "crates/ansiblers-roles",
     "tests",
 ]
 
@@ -24,11 +25,12 @@ authors = ["ansiblers contributors"]
 
 [workspace.dependencies]
 # Internal crates
-ansiblers-core = { path = "crates/ansiblers-core" }
-ansiblers-parser = { path = "crates/ansiblers-parser" }
+ansiblers-core      = { path = "crates/ansiblers-core" }
+ansiblers-parser    = { path = "crates/ansiblers-parser" }
 ansiblers-inventory = { path = "crates/ansiblers-inventory" }
-ansiblers-vars = { path = "crates/ansiblers-vars" }
+ansiblers-vars      = { path = "crates/ansiblers-vars" }
 ansiblers-templates = { path = "crates/ansiblers-templates" }
+ansiblers-roles     = { path = "crates/ansiblers-roles" }
 ansiblers-executor = { path = "crates/ansiblers-executor" }
 ansiblers-modules = { path = "crates/ansiblers-modules" }
 ansiblers-molecule = { path = "crates/ansiblers-molecule" }

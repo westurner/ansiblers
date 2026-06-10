@@ -28,21 +28,26 @@ path = "integration/test_phase2_modules.rs"
 name = "test_molecule"
 path = "integration/test_molecule.rs"
 
+[[test]]
+name = "test_phase3_roles"
+path = "integration/test_phase3_roles.rs"
+
 [lib]
 # Minimal lib needed so Cargo recognises this as a library crate.
 name = "ansiblers_it"
 path = "src/lib.rs"
 
 [dependencies]
-ansiblers-core = { workspace = true }
-ansiblers-parser = { workspace = true }
+ansiblers-core      = { workspace = true }
+ansiblers-parser    = { workspace = true }
 ansiblers-inventory = { workspace = true }
-ansiblers-vars = { workspace = true }
-ansiblers-executor = { workspace = true }
-ansiblers-modules = { workspace = true }
-ansiblers-molecule = { workspace = true }
+ansiblers-vars      = { workspace = true }
+ansiblers-executor  = { workspace = true }
+ansiblers-modules   = { workspace = true }
+ansiblers-molecule  = { workspace = true }
 ansiblers-templates = { workspace = true }
-serde_json = { workspace = true }
+ansiblers-roles     = { workspace = true }
+serde_json          = { workspace = true }
 
 [dev-dependencies]
 rstest = { workspace = true }

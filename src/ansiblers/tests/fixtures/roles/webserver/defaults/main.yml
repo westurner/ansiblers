@@ -1,0 +1,4 @@
+---
+# roles/webserver/defaults/main.yml
+nginx_version: "1.24"
+http_port: 80

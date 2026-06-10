@@ -1,0 +1,5 @@
+---
+# roles/webserver/handlers/main.yml
+
+- name: Restart nginx
+  shell: echo "would restart nginx"

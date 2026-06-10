@@ -83,6 +83,7 @@ dependencies = [
  "ansiblers-modules",
  "ansiblers-molecule",
  "ansiblers-parser",
+ "ansiblers-roles",
  "ansiblers-templates",
  "ansiblers-vars",
  "insta",
@@ -164,6 +165,25 @@ dependencies = [
  "tempfile",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "ansiblers-roles"
+version = "0.1.0"
+dependencies = [
+ "ansiblers-core",
+ "ansiblers-inventory",
+ "ansiblers-parser",
+ "anyhow",
+ "indexmap",
+ "insta",
+ "rstest",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "tempfile",
+ "thiserror",
+ "tracing",
 ]
 
 [[package]]

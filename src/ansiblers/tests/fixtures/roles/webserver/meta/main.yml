@@ -1,0 +1,9 @@
+---
+# roles/webserver/meta/main.yml
+galaxy_info:
+  author: ansiblers-test
+  description: Nginx webserver role
+  license: GPL-3.0
+
+dependencies:
+  - role: common

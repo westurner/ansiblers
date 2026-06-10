@@ -1,0 +1,14 @@
+---
+# requirements.yml — Galaxy role requirements fixture
+
+roles:
+  - name: geerlingguy.nginx
+    version: "6.0.0"
+  - src: https://github.com/ansiblers-test/testrole
+    name: testrole
+    version: main
+  - role: common
+
+collections:
+  - name: community.general
+    version: ">=7.0.0"
