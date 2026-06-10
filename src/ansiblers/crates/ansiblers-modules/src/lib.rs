@@ -14,6 +14,13 @@
 //! | `file` | 2 | Manage file/directory/symlink state |
 //! | `copy` | 2 | Copy files or write string content to a destination |
 //! | `stat` | 2 | Gather file/directory metadata |
+//! | `apt` | 5 | Manage Debian/Ubuntu packages via `apt-get` |
+//! | `yum` / `dnf` | 5 | Manage RPM packages via `yum`/`dnf` |
+//! | `find` | 5 | Recursively search a directory tree |
+//! | `template` | 5 | Render a Jinja2 template file to a destination |
+//! | `lineinfile` | 5 | Ensure a line is present/absent in a file (fancy-regex) |
+//! | `setup` | 5 | Gather system facts into `ansible_*` namespace |
+//! | `git` | 5 | Manage git repositories (clone, pull, checkout) |
 //!
 //! ## Python module invocation
 //!
@@ -46,17 +53,24 @@
 //! registry.register("my_custom_module", python);
 //! ```
 
+pub mod apt;
 pub mod command;
 pub mod copy;
 pub mod debug;
 pub mod fail;
 pub mod file;
+pub mod find;
+pub mod git;
+pub mod lineinfile;
 pub mod preview;
 pub mod python_wrapper;
 pub mod registry;
 pub mod set_fact;
+pub mod setup;
 pub mod shell;
 pub mod stat;
+pub mod template;
+pub mod yum;
 
 pub use preview::{is_bwrap_available, PreviewModeWrapper};
 pub use python_wrapper::{

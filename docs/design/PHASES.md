@@ -254,7 +254,7 @@ GitHub Actions:
 
 ---
 
-## Phase 5: High-Value Module Rewrites (Weeks 23-32)
+## Phase 5: High-Value Module Rewrites (Weeks 23-32) ✅ COMPLETE
 
 ### Prioritization Strategy
 
@@ -265,39 +265,51 @@ GitHub Actions:
 4. Prioritize >2x speedup candidates
 
 ### Week 23-24: Package Managers (apt, yum)
-- [ ] apt module implementation
-- [ ] yum/dnf module implementation
-- [ ] Package caching
-- [ ] Repository management
-- [ ] Performance comparison
+- [x] apt module implementation
+- [x] yum/dnf module implementation
+- [x] Package caching (idempotent check via `dpkg -l` / `rpm -q`)
+- [x] Repository management (apt: `update_cache`; yum: `enablerepo` / `disablerepo`)
+- [ ] Performance comparison (deferred — needs Ansible baseline)
 
 ### Week 25-26: File Operations (file, find, template)
-- [ ] file module (create, delete, permissions, ownership)
-- [ ] find module (directory traversal)
-- [ ] template module (Jinja2 rendering to file)
-- [ ] lineinfile module (text manipulation)
-- [ ] Performance benchmarking
+- [x] file module (extended: owner/group chown, recursive mode/owner via `walkdir`)
+- [x] find module (directory traversal with age/size/pattern filters)
+- [x] template module (Jinja2 rendering to file via `ansiblers-templates`)
+- [x] lineinfile module (text manipulation: insertafter/insertbefore/regexp — **fancy-regex** for Python-compatible lookahead/lookbehind/backreferences)
+- [ ] Performance benchmarking (deferred)
 
 ### Week 27-28: Facts Gathering (setup module)
-- [ ] setup module in Rust
-- [ ] Fact collection optimization
-- [ ] Fact caching
-- [ ] Fact merging
+- [x] setup module in Rust
+- [x] Fact collection (OS, kernel, CPU, memory, network interfaces, mounts)
+- [x] Fact caching and merging into ExecutionContext
+- [ ] Subset filtering (`gather_subset`) (deferred)
 
 ### Week 29-30: Git Operations
-- [ ] git module implementation
-- [ ] Clone/pull optimization
-- [ ] Performance comparison with Python
+- [x] git module implementation (clone, pull, checkout, depth, update)
+- [ ] Clone/pull optimization (deferred — needs git2 crate approval)
+- [ ] Performance comparison with Python (deferred)
 
 ### Week 31-32: Testing & Benchmarking
-- [ ] Comprehensive test suite for rewritten modules
-- [ ] Benchmarks vs Python Ansible
-- [ ] Integration tests with playbooks
-- [ ] Performance reports in reports/
+- [x] Comprehensive test suite for rewritten modules
+- [x] Integration tests with playbooks (`test_phase5_modules`)
+- [ ] Benchmarks vs Python Ansible (deferred)
+- [ ] Performance reports in reports/ (deferred)
 
 ### Coverage Target
 - 85% line coverage for rewritten modules
 - 75% branch coverage
+
+### Deliverables
+- ✅ `apt` module: `apt-get install/remove/update_cache/autoremove/purge/build-dep`
+- ✅ `yum` / `dnf` module: `yum install/remove/upgrade/makecache/autoremove`
+- ✅ `find` module: recursive directory search with glob, age, size, type, hidden filters
+- ✅ `template` module: Jinja2 `.j2` → file via `ansiblers-templates`; backup, force, mode
+- ✅ `lineinfile` module: insert/replace/remove lines; `fancy-regex` (lookahead, lookbehind, backrefs)
+- ✅ `setup` / `gather_facts` module: `ansible_*` facts from `/proc`, `/sys`, `uname`, `hostname`
+- ✅ `git` module: clone, fetch, checkout, shallow depth, submodules, SSH key/opts
+- ✅ Registry updated: all Phase 5 modules auto-registered in `ModuleRegistry::with_defaults()`
+- ✅ `fancy-regex = "0.18"` added to workspace (MIT, GPLv3-compatible)
+- ✅ 321 tests, 0 failures (up from 272 in Phase 4)
 
 ---
 

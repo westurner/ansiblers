@@ -6,14 +6,21 @@ use std::sync::Arc;
 use ansiblers_core::{ExecutionContext, TaskResult};
 use anyhow::Result;
 
+use crate::apt::AptModule;
 use crate::command::CommandModule;
 use crate::copy::CopyModule;
 use crate::debug::DebugModule;
 use crate::fail::FailModule;
 use crate::file::FileModule;
+use crate::find::FindModule;
+use crate::git::GitModule;
+use crate::lineinfile::LineinfileModule;
 use crate::set_fact::SetFactModule;
+use crate::setup::SetupModule;
 use crate::shell::ShellModule;
 use crate::stat::StatModule;
+use crate::template::TemplateModule;
+use crate::yum::YumModule;
 
 /// Arguments passed to a module at invocation time.
 ///
@@ -93,6 +100,16 @@ impl ModuleRegistry {
         r.register("file", Arc::new(FileModule));
         r.register("copy", Arc::new(CopyModule));
         r.register("stat", Arc::new(StatModule));
+        // Phase 5
+        r.register("apt", Arc::new(AptModule));
+        r.register("yum", Arc::new(YumModule));
+        r.register("dnf", Arc::new(YumModule));
+        r.register("find", Arc::new(FindModule));
+        r.register("template", Arc::new(TemplateModule));
+        r.register("lineinfile", Arc::new(LineinfileModule));
+        r.register("setup", Arc::new(SetupModule));
+        r.register("gather_facts", Arc::new(SetupModule));
+        r.register("git", Arc::new(GitModule));
         r
     }
 

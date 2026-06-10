@@ -21,6 +21,9 @@ anyhow              = { workspace = true }
 thiserror           = { workspace = true }
 tokio               = { workspace = true }
 tempfile            = { workspace = true }
+fancy-regex         = { workspace = true }
+indexmap            = { workspace = true }
+tracing             = { workspace = true }
 # Optional: only compiled when the `native-python` feature is enabled.
 pyo3 = { version = "0.22", features = ["auto-initialize"], optional = true }
 
