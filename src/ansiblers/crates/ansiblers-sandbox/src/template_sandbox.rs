@@ -67,8 +67,7 @@ impl SandboxedTemplateEngine {
                 "template sandbox enabled in config but 'jinja2-sandbox' feature \
                  is not compiled in; using standard engine"
             );
-            ansiblers_templates::render_string(template, vars)
-                .map_err(|e| anyhow::anyhow!("{e}"))
+            ansiblers_templates::render_string(template, vars).map_err(|e| anyhow::anyhow!("{e}"))
         }
     }
 }
@@ -164,6 +163,9 @@ mod tests {
     fn test_render_sandboxed_strict_undefined_errors() {
         let engine = SandboxedTemplateEngine::new(TemplateSandboxConfig::enabled());
         let result = engine.render("{{ undefined_var }}", &HashMap::new());
-        assert!(result.is_err(), "strict mode should error on undefined vars");
+        assert!(
+            result.is_err(),
+            "strict mode should error on undefined vars"
+        );
     }
 }

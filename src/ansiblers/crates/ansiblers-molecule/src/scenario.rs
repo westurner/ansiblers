@@ -19,9 +19,7 @@ pub struct Scenario {
 impl Scenario {
     /// Load from `<root>/molecule/<name>/molecule.yml`.
     pub fn load(project_root: &Path, scenario_name: &str) -> Result<Self> {
-        let root = project_root
-            .join("molecule")
-            .join(scenario_name);
+        let root = project_root.join("molecule").join(scenario_name);
         let config_path = root.join("molecule.yml");
         let config = MoleculeConfig::from_file(config_path.to_str().unwrap())
             .with_context(|| format!("loading molecule.yml for scenario '{scenario_name}'"))?;

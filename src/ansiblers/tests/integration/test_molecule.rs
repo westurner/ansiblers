@@ -15,7 +15,10 @@ fn test_molecule_none_driver_create_destroy() {
     let runner = ScenarioRunner::new();
 
     let result = runner
-        .run_sequence(&mut scenario, &[LifecyclePhase::Create, LifecyclePhase::Destroy])
+        .run_sequence(
+            &mut scenario,
+            &[LifecyclePhase::Create, LifecyclePhase::Destroy],
+        )
         .unwrap();
     assert!(result.success);
     assert_eq!(result.phases.len(), 2);

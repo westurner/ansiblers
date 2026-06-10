@@ -2,8 +2,8 @@
 
 use std::os::unix::fs::MetadataExt;
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, TaskResult, Value};
+use anyhow::Result;
 
 use crate::registry::{ModuleArgs, ModuleInvoker};
 
@@ -31,7 +31,9 @@ impl ModuleInvoker for StatModule {
             let mut stat_map = serde_json::Map::new();
             stat_map.insert("exists".to_string(), Value::Bool(false));
             stat_map.insert("path".to_string(), Value::String(path.clone()));
-            result.vars.insert("stat".to_string(), Value::Object(stat_map));
+            result
+                .vars
+                .insert("stat".to_string(), Value::Object(stat_map));
             return Ok(result);
         }
 
@@ -91,8 +93,17 @@ mod tests {
         std::fs::write(&f, b"hello").unwrap();
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("path".to_string(), Value::String(f.to_str().unwrap().to_string()));
-        let r = StatModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        args.insert(
+            "path".to_string(),
+            Value::String(f.to_str().unwrap().to_string()),
+        );
+        let r = StatModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         let stat = &r.vars["stat"];
         assert_eq!(stat["exists"], Value::Bool(true));
         assert_eq!(stat["isreg"], Value::Bool(true));
@@ -106,8 +117,17 @@ mod tests {
         let f = tmp.path().join("nope.txt");
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("path".to_string(), Value::String(f.to_str().unwrap().to_string()));
-        let r = StatModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        args.insert(
+            "path".to_string(),
+            Value::String(f.to_str().unwrap().to_string()),
+        );
+        let r = StatModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         assert_eq!(r.vars["stat"]["exists"], Value::Bool(false));
     }
 
@@ -116,8 +136,17 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("path".to_string(), Value::String(tmp.path().to_str().unwrap().to_string()));
-        let r = StatModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        args.insert(
+            "path".to_string(),
+            Value::String(tmp.path().to_str().unwrap().to_string()),
+        );
+        let r = StatModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         let stat = &r.vars["stat"];
         assert_eq!(stat["exists"], Value::Bool(true));
         assert_eq!(stat["isdir"], Value::Bool(true));

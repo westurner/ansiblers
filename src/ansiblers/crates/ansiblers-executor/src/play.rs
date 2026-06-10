@@ -123,8 +123,7 @@ impl PlayExecutor {
             // Single-host or zero-host — fall back to the original per-host loop.
             for host in &hosts {
                 let state = host_states.get_mut(host).unwrap();
-                let results =
-                    self.run_task_list(&play.tasks, host, ctx, state, &task_executor)?;
+                let results = self.run_task_list(&play.tasks, host, ctx, state, &task_executor)?;
                 host_results.insert(host.clone(), results);
             }
         }

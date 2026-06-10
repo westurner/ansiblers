@@ -208,7 +208,9 @@ fn render_when(expr: &str, vars: &HashMap<String, Value>, trust: TrustLevel) -> 
     } else {
         format!("{{{{ {expr} }}}}")
     };
-    engine.render(&template, vars).unwrap_or_else(|_| expr.to_string())
+    engine
+        .render(&template, vars)
+        .unwrap_or_else(|_| expr.to_string())
 }
 
 /// Interpret a rendered string as a boolean.

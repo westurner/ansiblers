@@ -5,8 +5,8 @@
 
 use std::fs;
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, TaskResult};
+use anyhow::Result;
 
 use crate::registry::{ModuleArgs, ModuleInvoker};
 
@@ -52,7 +52,10 @@ impl ModuleInvoker for CopyModule {
 
         let src_path = std::path::Path::new(src);
         if !src_path.exists() {
-            return Ok(TaskResult::failed(host, format!("source '{src}' does not exist")));
+            return Ok(TaskResult::failed(
+                host,
+                format!("source '{src}' does not exist"),
+            ));
         }
 
         // If dest is a directory, copy file into it.
@@ -84,11 +87,7 @@ impl ModuleInvoker for CopyModule {
         }
 
         let mut r = TaskResult::changed(host);
-        r.msg = format!(
-            "copied '{}' to '{}'",
-            src,
-            effective_dest.display()
-        );
+        r.msg = format!("copied '{}' to '{}'", src, effective_dest.display());
         Ok(r)
     }
 }
@@ -111,9 +110,18 @@ mod tests {
         let dest = tmp.path().join("out.txt");
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("dest".to_string(), Value::String(dest.to_str().unwrap().to_string()));
+        args.insert(
+            "dest".to_string(),
+            Value::String(dest.to_str().unwrap().to_string()),
+        );
         args.insert("content".to_string(), Value::String("hello\n".to_string()));
-        let r = CopyModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        let r = CopyModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         assert!(r.changed);
         assert_eq!(std::fs::read_to_string(&dest).unwrap(), "hello\n");
     }
@@ -125,9 +133,18 @@ mod tests {
         std::fs::write(&dest, "hello\n").unwrap();
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("dest".to_string(), Value::String(dest.to_str().unwrap().to_string()));
+        args.insert(
+            "dest".to_string(),
+            Value::String(dest.to_str().unwrap().to_string()),
+        );
         args.insert("content".to_string(), Value::String("hello\n".to_string()));
-        let r = CopyModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        let r = CopyModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         assert!(!r.changed);
     }
 
@@ -139,9 +156,21 @@ mod tests {
         std::fs::write(&src, b"data").unwrap();
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("src".to_string(), Value::String(src.to_str().unwrap().to_string()));
-        args.insert("dest".to_string(), Value::String(dest.to_str().unwrap().to_string()));
-        let r = CopyModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        args.insert(
+            "src".to_string(),
+            Value::String(src.to_str().unwrap().to_string()),
+        );
+        args.insert(
+            "dest".to_string(),
+            Value::String(dest.to_str().unwrap().to_string()),
+        );
+        let r = CopyModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         assert!(r.changed);
         assert_eq!(std::fs::read(&dest).unwrap(), b"data");
     }
@@ -155,9 +184,21 @@ mod tests {
         std::fs::write(&src, b"abc").unwrap();
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("src".to_string(), Value::String(src.to_str().unwrap().to_string()));
-        args.insert("dest".to_string(), Value::String(dest_dir.to_str().unwrap().to_string()));
-        let r = CopyModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        args.insert(
+            "src".to_string(),
+            Value::String(src.to_str().unwrap().to_string()),
+        );
+        args.insert(
+            "dest".to_string(),
+            Value::String(dest_dir.to_str().unwrap().to_string()),
+        );
+        let r = CopyModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         assert!(r.changed);
         assert!(dest_dir.join("file.txt").exists());
     }

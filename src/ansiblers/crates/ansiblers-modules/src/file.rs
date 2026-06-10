@@ -3,8 +3,8 @@
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, TaskResult};
+use anyhow::Result;
 
 use crate::registry::{ModuleArgs, ModuleInvoker};
 
@@ -84,7 +84,12 @@ fn remove_path(path: &str, host: &str) -> Result<TaskResult> {
     Ok(r)
 }
 
-fn ensure_directory(path: &str, mode_str: Option<&str>, recurse: bool, host: &str) -> Result<TaskResult> {
+fn ensure_directory(
+    path: &str,
+    mode_str: Option<&str>,
+    recurse: bool,
+    host: &str,
+) -> Result<TaskResult> {
     let p = std::path::Path::new(path);
     let existed = p.is_dir();
     if !existed {
@@ -180,9 +185,18 @@ mod tests {
         let dir = tmp.path().join("newdir");
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("path".to_string(), Value::String(dir.to_str().unwrap().to_string()));
+        args.insert(
+            "path".to_string(),
+            Value::String(dir.to_str().unwrap().to_string()),
+        );
         args.insert("state".to_string(), Value::String("directory".to_string()));
-        let r = FileModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        let r = FileModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         assert!(r.changed);
         assert!(dir.is_dir());
     }
@@ -193,9 +207,18 @@ mod tests {
         let f = tmp.path().join("new_file.txt");
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("path".to_string(), Value::String(f.to_str().unwrap().to_string()));
+        args.insert(
+            "path".to_string(),
+            Value::String(f.to_str().unwrap().to_string()),
+        );
         args.insert("state".to_string(), Value::String("touch".to_string()));
-        let r = FileModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        let r = FileModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         assert!(r.changed);
         assert!(f.exists());
     }
@@ -207,9 +230,18 @@ mod tests {
         std::fs::write(&f, b"hello").unwrap();
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("path".to_string(), Value::String(f.to_str().unwrap().to_string()));
+        args.insert(
+            "path".to_string(),
+            Value::String(f.to_str().unwrap().to_string()),
+        );
         args.insert("state".to_string(), Value::String("absent".to_string()));
-        let r = FileModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        let r = FileModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         assert!(r.changed);
         assert!(!f.exists());
     }
@@ -220,9 +252,18 @@ mod tests {
         let f = tmp.path().join("nonexistent.txt");
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("path".to_string(), Value::String(f.to_str().unwrap().to_string()));
+        args.insert(
+            "path".to_string(),
+            Value::String(f.to_str().unwrap().to_string()),
+        );
         args.insert("state".to_string(), Value::String("absent".to_string()));
-        let r = FileModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        let r = FileModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         assert!(!r.changed);
     }
 
@@ -234,10 +275,22 @@ mod tests {
         std::fs::write(&src, b"data").unwrap();
         let mut ctx = ctx();
         let mut args = HashMap::new();
-        args.insert("src".to_string(), Value::String(src.to_str().unwrap().to_string()));
-        args.insert("path".to_string(), Value::String(dest.to_str().unwrap().to_string()));
+        args.insert(
+            "src".to_string(),
+            Value::String(src.to_str().unwrap().to_string()),
+        );
+        args.insert(
+            "path".to_string(),
+            Value::String(dest.to_str().unwrap().to_string()),
+        );
         args.insert("state".to_string(), Value::String("link".to_string()));
-        let r = FileModule.invoke(&crate::registry::ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        let r = FileModule
+            .invoke(
+                &crate::registry::ModuleArgs::new(args),
+                "localhost",
+                &mut ctx,
+            )
+            .unwrap();
         assert!(r.changed);
         assert!(dest.symlink_metadata().is_ok());
     }

@@ -10,11 +10,11 @@ pub mod set_fact;
 pub mod shell;
 pub mod stat;
 
-pub use registry::{ModuleArgs, ModuleInvoker, ModuleRegistry};
 pub use preview::{is_bwrap_available, PreviewModeWrapper};
 pub use python_wrapper::{
-    AnsiblePythonModuleInvoker, ConfigurablePythonInvoker, PythonInvokeMode, PythonModuleConfig,
-    PythonModuleWrapper, SubprocessInvoker, discover_ansible_library_paths,
+    discover_ansible_library_paths, AnsiblePythonModuleInvoker, ConfigurablePythonInvoker,
+    PythonInvokeMode, PythonModuleConfig, PythonModuleWrapper, SubprocessInvoker,
 };
 #[cfg(feature = "native-python")]
 pub use python_wrapper::{NativePythonInvoker, SubInterpreterInvoker};
+pub use registry::{ModuleArgs, ModuleInvoker, ModuleRegistry};

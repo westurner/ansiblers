@@ -3,15 +3,19 @@
 use std::path::PathBuf;
 use std::process;
 
-use anyhow::{Context, Result};
 use ansiblers_molecule::{
     config::MoleculeConfig, driver::DriverKind, lifecycle::ScenarioRunner, scenario::Scenario,
 };
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use tracing::{error, info};
 
 #[derive(Parser, Debug)]
-#[command(name = "ransible-molecule", version, about = "Molecule-compatible multi-node test runner")]
+#[command(
+    name = "ransible-molecule",
+    version,
+    about = "Molecule-compatible multi-node test runner"
+)]
 struct Cli {
     #[command(subcommand)]
     command: MoleculeCommand,

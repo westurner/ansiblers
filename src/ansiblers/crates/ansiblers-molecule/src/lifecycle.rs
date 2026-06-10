@@ -3,11 +3,11 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, Inventory};
 use ansiblers_executor::PlayExecutor;
 use ansiblers_modules::ModuleRegistry;
 use ansiblers_parser::parse_playbook;
+use anyhow::Result;
 use tracing::{info, warn};
 
 use crate::scenario::Scenario;
@@ -160,8 +160,7 @@ impl ScenarioRunner {
             LifecyclePhase::Idempotence => {
                 // Re-run converge and check that nothing changed.
                 let pb_path = scenario.converge_playbook();
-                let result =
-                    self.run_playbook_phase(scenario, phase, pb_path.to_str().unwrap())?;
+                let result = self.run_playbook_phase(scenario, phase, pb_path.to_str().unwrap())?;
                 // Phase passes if no tasks reported changes.
                 Ok(result)
             }
@@ -291,7 +290,10 @@ mod tests {
 
         // Run create + destroy only (no playbooks needed).
         let result = runner
-            .run_sequence(&mut scenario, &[LifecyclePhase::Create, LifecyclePhase::Destroy])
+            .run_sequence(
+                &mut scenario,
+                &[LifecyclePhase::Create, LifecyclePhase::Destroy],
+            )
             .unwrap();
         assert!(result.success);
         assert_eq!(result.phases.len(), 2);

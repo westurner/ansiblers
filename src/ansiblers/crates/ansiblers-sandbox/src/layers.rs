@@ -50,9 +50,9 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::path::PathBuf;
 
-use anyhow::{Context, Result};
 use ansiblers_core::{ExecutionContext, TaskResult};
 use ansiblers_modules::{ModuleArgs, ModuleInvoker, ModuleRegistry};
+use anyhow::{Context, Result};
 use tracing::{debug, info};
 
 use crate::config::{BwrapSeccompProfile, ModuleSandboxConfig};
@@ -131,9 +131,9 @@ impl SandboxedModuleRegistry {
             }
         }
 
-        let output = cmd.output().with_context(|| {
-            format!("running bwrap for module '{module_name}'")
-        })?;
+        let output = cmd
+            .output()
+            .with_context(|| format!("running bwrap for module '{module_name}'"))?;
 
         let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
         let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
@@ -182,7 +182,11 @@ impl SandboxedModuleRegistry {
 
         // Extra bind mounts from config.
         for (host_path, container_path) in &self.config.extra_ro_binds {
-            args.extend(["--ro-bind".into(), host_path.clone(), container_path.clone()]);
+            args.extend([
+                "--ro-bind".into(),
+                host_path.clone(),
+                container_path.clone(),
+            ]);
         }
         for (host_path, container_path) in &self.config.extra_rw_binds {
             args.extend(["--bind".into(), host_path.clone(), container_path.clone()]);
@@ -195,7 +199,9 @@ impl SandboxedModuleRegistry {
                     args.extend(["--seccomp".into(), fd_path]);
                 }
                 Err(e) => {
-                    tracing::warn!("could not build seccomp profile for bwrap: {e}; continuing without");
+                    tracing::warn!(
+                        "could not build seccomp profile for bwrap: {e}; continuing without"
+                    );
                 }
             }
         }
@@ -215,10 +221,7 @@ impl SandboxedModuleRegistry {
 /// number).  We write the BPF to a file in the sandbox tmp dir and pass the
 /// path (bwrap will open it by path in practice, or we can pass an fd number
 /// using `/proc/self/fd/<n>`).
-fn build_seccomp_bpf(
-    profile: &BwrapSeccompProfile,
-    tmp: &tempfile::TempDir,
-) -> Result<String> {
+fn build_seccomp_bpf(profile: &BwrapSeccompProfile, tmp: &tempfile::TempDir) -> Result<String> {
     #[cfg(feature = "seccomp")]
     {
         build_seccomp_bpf_libseccomp(profile, tmp)
@@ -264,10 +267,22 @@ fn build_seccomp_bpf_libseccomp(
 
     // For Minimal profile also deny setuid/setgid and networking.
     let minimal_extra: &[&str] = &[
-        "setuid", "setuid32", "setgid", "setgid32",
-        "setresuid", "setresuid32", "setresgid", "setresgid32",
-        "socket", "connect", "sendto", "recvfrom",
-        "bind", "listen", "accept", "accept4",
+        "setuid",
+        "setuid32",
+        "setgid",
+        "setgid32",
+        "setresuid",
+        "setresuid32",
+        "setresgid",
+        "setresgid32",
+        "socket",
+        "connect",
+        "sendto",
+        "recvfrom",
+        "bind",
+        "listen",
+        "accept",
+        "accept4",
     ];
 
     let mut filter = ScmpFilterContext::new_filter(ScmpAction::Allow)
@@ -294,8 +309,7 @@ fn build_seccomp_bpf_libseccomp(
 
     // Export as BPF bytecode.
     let bpf_path = tmp.path().join("seccomp.bpf");
-    let mut file = std::fs::File::create(&bpf_path)
-        .context("create seccomp BPF file")?;
+    let mut file = std::fs::File::create(&bpf_path).context("create seccomp BPF file")?;
     filter
         .export_bpf(&mut file)
         .map_err(|e| anyhow::anyhow!("export seccomp BPF: {e}"))?;
@@ -310,8 +324,7 @@ fn build_seccomp_bpf_libseccomp(
 
 /// Returns `true` for modules that spawn subprocesses (shell, command, Python).
 fn is_subprocess_module(name: &str) -> bool {
-    matches!(name, "shell" | "command" | "raw" | "script")
-        || name.starts_with("python:")
+    matches!(name, "shell" | "command" | "raw" | "script") || name.starts_with("python:")
 }
 
 /// Build a shell invocation script for the module inside the container.
@@ -327,8 +340,7 @@ fn build_invocation_script(
         }
         _ => {
             // For Python modules, build the argument invocation.
-            let args_json = serde_json::to_string(&args.args)
-                .unwrap_or_else(|_| "{}".to_string());
+            let args_json = serde_json::to_string(&args.args).unwrap_or_else(|_| "{}".to_string());
             format!(
                 "#!/bin/sh\necho '{}' | python3 -\n",
                 args_json.replace('\'', "'\\''")
@@ -363,10 +375,9 @@ fn parse_bwrap_output(
     result.rc = rc;
 
     if !diff.is_empty() {
-        result.vars.insert(
-            "_diff".to_string(),
-            serde_json::json!(diff),
-        );
+        result
+            .vars
+            .insert("_diff".to_string(), serde_json::json!(diff));
     }
 
     Ok(result)
@@ -460,7 +471,9 @@ mod tests {
         let mut args = HashMap::new();
         args.insert("msg".to_string(), Value::String("sandbox_test".to_string()));
         let ma = ModuleArgs::new(args);
-        let result = registry.invoke("debug", &ma, "localhost", &mut ctx).unwrap();
+        let result = registry
+            .invoke("debug", &ma, "localhost", &mut ctx)
+            .unwrap();
         assert!(result.status.is_ok());
         assert_eq!(result.msg, "sandbox_test");
     }

@@ -8,10 +8,10 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-use anyhow::Result;
 use ansiblers_core::{ExecutionContext, HostState, TaskResult};
 use ansiblers_modules::ModuleRegistry;
 use ansiblers_parser::TaskNode;
+use anyhow::Result;
 use tracing::error;
 
 use crate::task::TaskExecutor;
@@ -46,12 +46,8 @@ pub fn execute_tasks_multi_host(
     host_states: &mut HashMap<String, HostState>,
 ) -> Result<HashMap<String, Vec<TaskResult>>> {
     match strategy {
-        Strategy::Linear => {
-            execute_linear(tasks, hosts, registry, shared_ctx, host_states)
-        }
-        Strategy::Free => {
-            execute_free(tasks, hosts, registry, shared_ctx, host_states)
-        }
+        Strategy::Linear => execute_linear(tasks, hosts, registry, shared_ctx, host_states),
+        Strategy::Free => execute_free(tasks, hosts, registry, shared_ctx, host_states),
     }
 }
 
@@ -92,9 +88,8 @@ fn execute_linear(
                     // Delegate block handling back to PlayExecutor — this
                     // avoids duplicating block logic here.  We run the block
                     // per-host serially in the linear strategy.
-                    let block_results = execute_block_single_host(
-                        block, host, registry, ctx, state,
-                    )?;
+                    let block_results =
+                        execute_block_single_host(block, host, registry, ctx, state)?;
                     all_results
                         .entry(host.clone())
                         .or_default()
@@ -170,7 +165,10 @@ fn execute_free(
                 }
             }
 
-            results_ref.lock().unwrap().insert(host.clone(), host_results);
+            results_ref
+                .lock()
+                .unwrap()
+                .insert(host.clone(), host_results);
             states_ref.lock().unwrap().insert(host, state);
             Ok(())
         });
@@ -228,8 +226,7 @@ fn execute_block_single_host(
                 results.push(result);
             }
             TaskNode::Block(inner) => {
-                let inner_results =
-                    execute_block_single_host(inner, host, registry, ctx, state)?;
+                let inner_results = execute_block_single_host(inner, host, registry, ctx, state)?;
                 results.extend(inner_results);
                 block_failed = state.failed;
             }

@@ -151,10 +151,7 @@ impl PyPlaybookRunner {
     }
 
     fn __repr__(&self) -> String {
-        format!(
-            "PlaybookRunner(inventory={:?})",
-            self.inventory_path
-        )
+        format!("PlaybookRunner(inventory={:?})", self.inventory_path)
     }
 }
 

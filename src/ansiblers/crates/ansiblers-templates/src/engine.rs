@@ -351,7 +351,10 @@ mod tests {
             .collect();
         let template_val = Value::Object({
             let mut m = serde_json::Map::new();
-            m.insert("msg".to_string(), Value::String("{{ greeting }}".to_string()));
+            m.insert(
+                "msg".to_string(),
+                Value::String("{{ greeting }}".to_string()),
+            );
             m
         });
         let rendered = render_value(&template_val, &v).unwrap();
@@ -388,7 +391,12 @@ mod tests {
         let engine = AnsibleTemplateEngine::with_config(TemplateEngineConfig::trusted());
         assert_eq!(engine.trust_level(), TrustLevel::Trusted);
         // Standard engine always succeeds on basic renders.
-        let r = engine.render("{{ x }}", &[("x".to_string(), Value::Number(1.into()))].into_iter().collect());
+        let r = engine.render(
+            "{{ x }}",
+            &[("x".to_string(), Value::Number(1.into()))]
+                .into_iter()
+                .collect(),
+        );
         assert!(r.is_ok());
     }
 
@@ -408,7 +416,10 @@ mod tests {
     fn test_sandboxed_strict_undefined_errors() {
         let engine = AnsibleTemplateEngine::sandboxed();
         let result = engine.render("{{ missing }}", &HashMap::new());
-        assert!(result.is_err(), "strict mode should error on undefined vars");
+        assert!(
+            result.is_err(),
+            "strict mode should error on undefined vars"
+        );
     }
 
     #[cfg(feature = "sandboxed")]
@@ -459,9 +470,9 @@ mod tests {
         );
 
         // Sanity: sandboxed should not be more than 10× slower.
-        assert!(sb_us < std_us * 10.0 || std_us < 1.0,
-            "sandboxed engine unexpectedly slow: {sb_us:.1} us vs std {std_us:.1} us");
+        assert!(
+            sb_us < std_us * 10.0 || std_us < 1.0,
+            "sandboxed engine unexpectedly slow: {sb_us:.1} us vs std {std_us:.1} us"
+        );
     }
 }
-
-

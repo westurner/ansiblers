@@ -143,12 +143,7 @@ impl Driver for DockerDriver {
     fn status(&self, name: &str) -> Result<InstanceState> {
         let container_name = molecule_container_name(name);
         let output = Command::new("docker")
-            .args([
-                "inspect",
-                "--format",
-                "{{.State.Running}}",
-                &container_name,
-            ])
+            .args(["inspect", "--format", "{{.State.Running}}", &container_name])
             .output()
             .context("docker inspect")?;
 
@@ -256,12 +251,7 @@ impl Driver for PodmanDriver {
     fn status(&self, name: &str) -> Result<InstanceState> {
         let container_name = molecule_container_name(name);
         let output = Command::new("podman")
-            .args([
-                "inspect",
-                "--format",
-                "{{.State.Running}}",
-                &container_name,
-            ])
+            .args(["inspect", "--format", "{{.State.Running}}", &container_name])
             .output()
             .context("podman inspect")?;
 

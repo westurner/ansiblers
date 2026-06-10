@@ -13,8 +13,8 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use anyhow::{Context, Result};
 use ansiblers_core::{ExecutionContext, TaskResult};
+use anyhow::{Context, Result};
 
 use crate::registry::{ModuleArgs, ModuleInvoker};
 

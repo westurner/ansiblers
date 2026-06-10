@@ -33,8 +33,8 @@ use std::collections::HashMap;
 use std::io::Write;
 use std::process::Command;
 
-use anyhow::{Context, Result};
 use ansiblers_core::{ExecutionContext, TaskResult, Value};
+use anyhow::{Context, Result};
 use tempfile::NamedTempFile;
 
 use crate::registry::{ModuleArgs, ModuleInvoker};
@@ -275,7 +275,12 @@ impl SubprocessInvoker {
 }
 
 impl ModuleInvoker for SubprocessInvoker {
-    fn invoke(&self, args: &ModuleArgs, host: &str, _ctx: &mut ExecutionContext) -> Result<TaskResult> {
+    fn invoke(
+        &self,
+        args: &ModuleArgs,
+        host: &str,
+        _ctx: &mut ExecutionContext,
+    ) -> Result<TaskResult> {
         let module_name = args.task_name.as_deref().unwrap_or("unknown");
         let path = args
             .args
@@ -290,7 +295,10 @@ impl ModuleInvoker for SubprocessInvoker {
             });
         match path {
             Some(p) => invoke_subprocess(&p, &args.args, host, &self.config),
-            None => Ok(TaskResult::failed(host, format!("Python module '{module_name}' not found"))),
+            None => Ok(TaskResult::failed(
+                host,
+                format!("Python module '{module_name}' not found"),
+            )),
         }
     }
 }
@@ -344,7 +352,12 @@ pub struct NativePythonInvoker;
 
 #[cfg(feature = "native-python")]
 impl ModuleInvoker for NativePythonInvoker {
-    fn invoke(&self, args: &ModuleArgs, host: &str, _ctx: &mut ExecutionContext) -> Result<TaskResult> {
+    fn invoke(
+        &self,
+        args: &ModuleArgs,
+        host: &str,
+        _ctx: &mut ExecutionContext,
+    ) -> Result<TaskResult> {
         let path = args
             .args
             .get("_module_path")
@@ -379,7 +392,10 @@ fn invoke_native(
         let orig_argv = sys.getattr("argv")?.into_py(py);
         let orig_stdout = sys.getattr("stdout")?.into_py(py);
         let buf = io.call_method0("StringIO")?;
-        sys.setattr("argv", PyList::new_bound(py, [module_path, args_path.as_str()]))?;
+        sys.setattr(
+            "argv",
+            PyList::new_bound(py, [module_path, args_path.as_str()]),
+        )?;
         sys.setattr("stdout", &buf)?;
 
         // Prepare module globals.
@@ -426,7 +442,12 @@ pub struct SubInterpreterInvoker;
 
 #[cfg(feature = "native-python")]
 impl ModuleInvoker for SubInterpreterInvoker {
-    fn invoke(&self, args: &ModuleArgs, host: &str, _ctx: &mut ExecutionContext) -> Result<TaskResult> {
+    fn invoke(
+        &self,
+        args: &ModuleArgs,
+        host: &str,
+        _ctx: &mut ExecutionContext,
+    ) -> Result<TaskResult> {
         let path = args
             .args
             .get("_module_path")
@@ -486,7 +507,10 @@ fn invoke_sub_interpreter(
                 let orig_stdout = sys.getattr("stdout")?.into_py(py);
                 let buf = io.call_method0("StringIO")?;
                 use pyo3::types::{PyDict, PyList};
-                sys.setattr("argv", PyList::new_bound(py, [module_path, args_path.as_str()]))?;
+                sys.setattr(
+                    "argv",
+                    PyList::new_bound(py, [module_path, args_path.as_str()]),
+                )?;
                 sys.setattr("stdout", &buf)?;
                 let globals = PyDict::new_bound(py);
                 globals.set_item("__name__", "__main__")?;
@@ -519,7 +543,10 @@ fn build_subinterp_bootstrap(
 ) -> String {
     // Escape backslashes and quotes in paths for embedding in Python strings.
     let esc = |s: &str| s.replace('\\', "\\\\").replace('\'', "\\'");
-    let esc_src = source.replace('\\', "\\\\").replace('\'', "\\'").replace('\n', "\\n");
+    let esc_src = source
+        .replace('\\', "\\\\")
+        .replace('\'', "\\'")
+        .replace('\n', "\\n");
 
     format!(
         r#"
@@ -571,13 +598,25 @@ pub struct PythonModuleWrapper {
 
 impl PythonModuleWrapper {
     pub fn new(module_path: impl Into<String>) -> Self {
-        Self { module_path: module_path.into() }
+        Self {
+            module_path: module_path.into(),
+        }
     }
 }
 
 impl ModuleInvoker for PythonModuleWrapper {
-    fn invoke(&self, args: &ModuleArgs, host: &str, _ctx: &mut ExecutionContext) -> Result<TaskResult> {
-        invoke_subprocess(&self.module_path, &args.args, host, &PythonModuleConfig::default())
+    fn invoke(
+        &self,
+        args: &ModuleArgs,
+        host: &str,
+        _ctx: &mut ExecutionContext,
+    ) -> Result<TaskResult> {
+        invoke_subprocess(
+            &self.module_path,
+            &args.args,
+            host,
+            &PythonModuleConfig::default(),
+        )
     }
 }
 
@@ -593,12 +632,19 @@ impl AnsiblePythonModuleInvoker {
     }
 
     pub fn from_env() -> Self {
-        Self { library_paths: discover_ansible_library_paths() }
+        Self {
+            library_paths: discover_ansible_library_paths(),
+        }
     }
 }
 
 impl ModuleInvoker for AnsiblePythonModuleInvoker {
-    fn invoke(&self, args: &ModuleArgs, host: &str, _ctx: &mut ExecutionContext) -> Result<TaskResult> {
+    fn invoke(
+        &self,
+        args: &ModuleArgs,
+        host: &str,
+        _ctx: &mut ExecutionContext,
+    ) -> Result<TaskResult> {
         let name = args.task_name.as_deref().unwrap_or("unknown");
         let path = self.library_paths.iter().find_map(|lib| {
             let c = format!("{lib}/{name}.py");
@@ -606,7 +652,10 @@ impl ModuleInvoker for AnsiblePythonModuleInvoker {
         });
         match path {
             Some(p) => invoke_subprocess(&p, &args.args, host, &PythonModuleConfig::default()),
-            None => Ok(TaskResult::failed(host, format!("Python module '{name}' not found"))),
+            None => Ok(TaskResult::failed(
+                host,
+                format!("Python module '{name}' not found"),
+            )),
         }
     }
 }
@@ -617,7 +666,10 @@ impl ModuleInvoker for AnsiblePythonModuleInvoker {
 
 /// Write module args to a temp file in `{"ANSIBLE_MODULE_ARGS": {…}}` format.
 fn write_args_file(module_args: &HashMap<String, Value>) -> Result<NamedTempFile> {
-    let clean: HashMap<_, _> = module_args.iter().filter(|(k, _)| !k.starts_with('_')).collect();
+    let clean: HashMap<_, _> = module_args
+        .iter()
+        .filter(|(k, _)| !k.starts_with('_'))
+        .collect();
     let json = serde_json::json!({ "ANSIBLE_MODULE_ARGS": clean });
     let mut f = NamedTempFile::new().context("create args temp file")?;
     serde_json::to_writer(&mut f, &json).context("write args JSON")?;
@@ -635,9 +687,19 @@ fn parse_output(stdout: &str, stderr: &str, rc: i32, host: &str) -> Result<TaskR
 
     match serde_json::from_str::<serde_json::Value>(json_str) {
         Ok(json) => {
-            let failed = json.get("failed").and_then(|v| v.as_bool()).unwrap_or(false);
-            let changed = json.get("changed").and_then(|v| v.as_bool()).unwrap_or(false);
-            let msg = json.get("msg").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let failed = json
+                .get("failed")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
+            let changed = json
+                .get("changed")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
+            let msg = json
+                .get("msg")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string();
 
             let mut r = if failed {
                 TaskResult::failed(host, msg.clone())
@@ -661,7 +723,11 @@ fn parse_output(stdout: &str, stderr: &str, rc: i32, host: &str) -> Result<TaskR
             Ok(r)
         }
         Err(_) => {
-            let mut r = if rc == 0 { TaskResult::ok(host) } else { TaskResult::failed(host, stderr.trim().to_string()) };
+            let mut r = if rc == 0 {
+                TaskResult::ok(host)
+            } else {
+                TaskResult::failed(host, stderr.trim().to_string())
+            };
             r.stdout = stdout.to_string();
             r.stderr = stderr.to_string();
             r.rc = rc;
@@ -698,12 +764,19 @@ fn last_json_object(s: &str) -> Option<&str> {
 /// Discover the Ansible modules directory from the active Python environment.
 pub fn discover_ansible_library_paths() -> Vec<String> {
     let out = Command::new("python3")
-        .args(["-c", "import ansible.modules,os; print(os.path.dirname(ansible.modules.__file__))"])
+        .args([
+            "-c",
+            "import ansible.modules,os; print(os.path.dirname(ansible.modules.__file__))",
+        ])
         .output();
     match out {
         Ok(o) if o.status.success() => {
             let p = String::from_utf8_lossy(&o.stdout).trim().to_string();
-            if !p.is_empty() { vec![p] } else { vec![] }
+            if !p.is_empty() {
+                vec![p]
+            } else {
+                vec![]
+            }
         }
         _ => vec![],
     }
@@ -722,7 +795,10 @@ mod tests {
 
     #[test]
     fn test_default_config_is_subprocess() {
-        assert_eq!(PythonModuleConfig::default().mode, PythonInvokeMode::Subprocess);
+        assert_eq!(
+            PythonModuleConfig::default().mode,
+            PythonInvokeMode::Subprocess
+        );
     }
 
     #[test]
@@ -731,7 +807,10 @@ mod tests {
             .with_python("/usr/bin/python3.13")
             .with_env("ANSIBLE_NOCOLOR", "1");
         assert_eq!(cfg.python_executable, "/usr/bin/python3.13");
-        assert_eq!(cfg.extra_env.get("ANSIBLE_NOCOLOR").map(|s| s.as_str()), Some("1"));
+        assert_eq!(
+            cfg.extra_env.get("ANSIBLE_NOCOLOR").map(|s| s.as_str()),
+            Some("1")
+        );
     }
 
     #[test]
@@ -784,7 +863,13 @@ mod tests {
 
     #[test]
     fn test_parse_extra_vars() {
-        let r = parse_output(r#"{"changed":false,"rc":0,"stdout":"hi","msg":""}"#, "", 0, "h1").unwrap();
+        let r = parse_output(
+            r#"{"changed":false,"rc":0,"stdout":"hi","msg":""}"#,
+            "",
+            0,
+            "h1",
+        )
+        .unwrap();
         assert!(r.vars.contains_key("rc"));
         assert!(r.vars.contains_key("stdout"));
     }
@@ -814,7 +899,13 @@ mod tests {
         let mut tmp = NamedTempFile::with_suffix(".py").unwrap();
         tmp.write_all(script).unwrap();
         let cfg = PythonModuleConfig::subprocess();
-        let r = invoke_subprocess(tmp.path().to_str().unwrap(), &HashMap::new(), "localhost", &cfg).unwrap();
+        let r = invoke_subprocess(
+            tmp.path().to_str().unwrap(),
+            &HashMap::new(),
+            "localhost",
+            &cfg,
+        )
+        .unwrap();
         assert!(r.status.is_ok());
         assert_eq!(r.msg, "subprocess_ok");
         assert_eq!(r.vars.get("invoked"), Some(&Value::Bool(true)));
@@ -826,7 +917,13 @@ mod tests {
         let mut tmp = NamedTempFile::with_suffix(".py").unwrap();
         tmp.write_all(script).unwrap();
         let cfg = PythonModuleConfig::subprocess();
-        let r = invoke_subprocess(tmp.path().to_str().unwrap(), &HashMap::new(), "localhost", &cfg).unwrap();
+        let r = invoke_subprocess(
+            tmp.path().to_str().unwrap(),
+            &HashMap::new(),
+            "localhost",
+            &cfg,
+        )
+        .unwrap();
         assert!(r.status.is_failed());
         assert_eq!(r.msg, "oops");
     }
@@ -859,7 +956,10 @@ mod tests {
         let mut tmp = NamedTempFile::with_suffix(".py").unwrap();
         tmp.write_all(script).unwrap();
         let mut args = HashMap::new();
-        args.insert("mykey".to_string(), Value::String("hello_native".to_string()));
+        args.insert(
+            "mykey".to_string(),
+            Value::String("hello_native".to_string()),
+        );
         let r = invoke_native(tmp.path().to_str().unwrap(), &args, "localhost").unwrap();
         assert_eq!(r.msg, "hello_native");
     }
@@ -875,7 +975,8 @@ mod tests {
             sys.exit(0)\n";
         let mut tmp = NamedTempFile::with_suffix(".py").unwrap();
         tmp.write_all(script).unwrap();
-        let r = invoke_sub_interpreter(tmp.path().to_str().unwrap(), &HashMap::new(), "localhost").unwrap();
+        let r = invoke_sub_interpreter(tmp.path().to_str().unwrap(), &HashMap::new(), "localhost")
+            .unwrap();
         // Result is ok; message may vary depending on Python version.
         assert!(r.status.is_ok());
     }
@@ -903,8 +1004,8 @@ mod tests {
     fn test_configurable_with_module_path_arg() {
         use crate::registry::ModuleArgs;
         use ansiblers_core::{ExecutionContext, Inventory};
-        use std::sync::Arc;
         use std::io::Write;
+        use std::sync::Arc;
 
         let script = b"import sys,json\nprint(json.dumps({\"changed\":False,\"msg\":\"via_path\"}))\nsys.exit(0)\n";
         let mut tmp = NamedTempFile::with_suffix(".py").unwrap();
@@ -913,8 +1014,13 @@ mod tests {
         let inv = ConfigurablePythonInvoker::new(PythonModuleConfig::subprocess());
         let mut ctx = ExecutionContext::new(Arc::new(Inventory::default()), HashMap::new());
         let mut args = HashMap::new();
-        args.insert("_module_path".to_string(), Value::String(tmp.path().to_str().unwrap().to_string()));
-        let r = inv.invoke(&ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+        args.insert(
+            "_module_path".to_string(),
+            Value::String(tmp.path().to_str().unwrap().to_string()),
+        );
+        let r = inv
+            .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+            .unwrap();
         assert_eq!(r.msg, "via_path");
     }
 
@@ -924,4 +1030,3 @@ mod tests {
         // Just confirm it doesn't panic (Ansible may not be installed in CI).
     }
 }
-

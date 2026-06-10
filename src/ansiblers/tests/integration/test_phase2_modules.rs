@@ -14,7 +14,10 @@ fn executor() -> PlayExecutor {
 }
 
 fn local_ctx() -> ExecutionContext {
-    ExecutionContext::new(Arc::new(Inventory::default()), std::collections::HashMap::new())
+    ExecutionContext::new(
+        Arc::new(Inventory::default()),
+        std::collections::HashMap::new(),
+    )
 }
 
 #[rstest]
@@ -22,8 +25,7 @@ fn local_ctx() -> ExecutionContext {
 #[case("copy_operations.yml")]
 fn test_phase2_playbooks_succeed(#[case] filename: &str) {
     let path = fixture_path(&format!("playbooks/{filename}"));
-    let pb = parse_playbook(&path)
-        .unwrap_or_else(|e| panic!("parse {filename}: {e}"));
+    let pb = parse_playbook(&path).unwrap_or_else(|e| panic!("parse {filename}: {e}"));
     let mut ctx = local_ctx();
     let result = executor()
         .run_playbook(&pb, &mut ctx)
@@ -33,8 +35,8 @@ fn test_phase2_playbooks_succeed(#[case] filename: &str) {
 
 #[test]
 fn test_file_module_directory_create_remove() {
-    use ansiblers_modules::{ModuleArgs, ModuleInvoker};
     use ansiblers_modules::file::FileModule;
+    use ansiblers_modules::{ModuleArgs, ModuleInvoker};
     use std::collections::HashMap;
 
     let tmp = tempfile::TempDir::new().unwrap();
@@ -42,24 +44,37 @@ fn test_file_module_directory_create_remove() {
     let mut ctx = local_ctx();
 
     let mut args = HashMap::new();
-    args.insert("path".to_string(), Value::String(dir.to_str().unwrap().to_string()));
+    args.insert(
+        "path".to_string(),
+        Value::String(dir.to_str().unwrap().to_string()),
+    );
     args.insert("state".to_string(), Value::String("directory".to_string()));
-    let result = FileModule.invoke(&ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+    let result = FileModule
+        .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+        .unwrap();
     assert!(result.changed);
     assert!(dir.is_dir());
 
     // Idempotent second call.
     let mut args2 = HashMap::new();
-    args2.insert("path".to_string(), Value::String(dir.to_str().unwrap().to_string()));
+    args2.insert(
+        "path".to_string(),
+        Value::String(dir.to_str().unwrap().to_string()),
+    );
     args2.insert("state".to_string(), Value::String("directory".to_string()));
-    let result2 = FileModule.invoke(&ModuleArgs::new(args2), "localhost", &mut ctx).unwrap();
-    assert!(!result2.changed, "second directory create should be idempotent");
+    let result2 = FileModule
+        .invoke(&ModuleArgs::new(args2), "localhost", &mut ctx)
+        .unwrap();
+    assert!(
+        !result2.changed,
+        "second directory create should be idempotent"
+    );
 }
 
 #[test]
 fn test_copy_module_content_write() {
-    use ansiblers_modules::{ModuleArgs, ModuleInvoker};
     use ansiblers_modules::copy::CopyModule;
+    use ansiblers_modules::{ModuleArgs, ModuleInvoker};
     use std::collections::HashMap;
 
     let tmp = tempfile::TempDir::new().unwrap();
@@ -67,17 +82,25 @@ fn test_copy_module_content_write() {
     let mut ctx = local_ctx();
 
     let mut args = HashMap::new();
-    args.insert("dest".to_string(), Value::String(dest.to_str().unwrap().to_string()));
-    args.insert("content".to_string(), Value::String("test content\n".to_string()));
-    let result = CopyModule.invoke(&ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+    args.insert(
+        "dest".to_string(),
+        Value::String(dest.to_str().unwrap().to_string()),
+    );
+    args.insert(
+        "content".to_string(),
+        Value::String("test content\n".to_string()),
+    );
+    let result = CopyModule
+        .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+        .unwrap();
     assert!(result.changed);
     assert_eq!(std::fs::read_to_string(&dest).unwrap(), "test content\n");
 }
 
 #[test]
 fn test_stat_module_existing_file() {
-    use ansiblers_modules::{ModuleArgs, ModuleInvoker};
     use ansiblers_modules::stat::StatModule;
+    use ansiblers_modules::{ModuleArgs, ModuleInvoker};
     use std::collections::HashMap;
 
     let tmp = tempfile::TempDir::new().unwrap();
@@ -86,8 +109,13 @@ fn test_stat_module_existing_file() {
     let mut ctx = local_ctx();
 
     let mut args = HashMap::new();
-    args.insert("path".to_string(), Value::String(f.to_str().unwrap().to_string()));
-    let result = StatModule.invoke(&ModuleArgs::new(args), "localhost", &mut ctx).unwrap();
+    args.insert(
+        "path".to_string(),
+        Value::String(f.to_str().unwrap().to_string()),
+    );
+    let result = StatModule
+        .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+        .unwrap();
     assert_eq!(result.vars["stat"]["exists"], Value::Bool(true));
     assert_eq!(result.vars["stat"]["isreg"], Value::Bool(true));
 }
