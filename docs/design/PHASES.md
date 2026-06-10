@@ -215,7 +215,9 @@ tests/fixtures/inventories/
 - [ ] Recursive role dependency resolution
 - [ ] Basic galaxy metadata support
 - [ ] Role path configuration (ansible.cfg)
-- [ ] Galaxy requirements.yml parsing (stub)
+- [ ] Galaxy requirements.yml parsing
+- [ ] Galaxy support for roles with Cargo.toml
+  - [ ] Cargo.toml metadata schema to indicate that its an ansiblers role
 
 #### Week 18: Integration & Validation
 - [ ] Test with real roles from galaxy
