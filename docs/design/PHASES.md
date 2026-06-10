@@ -313,7 +313,7 @@ GitHub Actions:
 
 ---
 
-## Phase 6: Zero-Trust WebRTC & Performance Optimization (Weeks 33+) ✅ IN PROGRESS
+## Phase 6: Zero-Trust WebRTC & Performance Optimization (Weeks 33+) ✅ WEEKS 33-42 COMPLETE
 
 ### Goals
 - ✅ Pluggable `ConnectionProvider` trait for transport abstraction
@@ -321,6 +321,7 @@ GitHub Actions:
 - ✅ `Batch(n)` strategy: cap concurrent hosts
 - ✅ Module result caching (`CachingModuleRegistry`, `InMemoryCache`, `SqliteCache`)
 - ✅ Benchmarking suite (`criterion`-based for playbooks, variables, multi-host)
+- ✅ Architecture, performance, migration, and troubleshooting documentation
 - ⏳ WebRTC PQ transport (`WebRtcPqConnection`) — deferred
 - ⏳ X25519MLKEM768 post-quantum handshakes — deferred
 - ⏳ W3C DID document resolution & ML-DSA payload signing — deferred
@@ -364,11 +365,14 @@ GitHub Actions:
   - simple interpolation, nested dict, loop context, complex filter chain
   - merged_vars_100 (100-var merge benchmark)
 
-#### Weeks 41-42: Documentation & Adoption (Planned)
-- [ ] Architecture documentation
-- [ ] Performance tuning guide
-- [ ] Migration guide from ansible-playbook
-- [ ] Troubleshooting guide
+#### Weeks 41-42: Documentation & Adoption ✅
+- [x] Architecture documentation updated (`docs/design/ARCHITECTURE.md`)
+- [x] Performance tuning guide (`docs/design/PERFORMANCE_TUNING.md`)
+  - Strategies (Linear / Free / Batch(n)), async fan-out usage, caching config
+- [x] Migration guide from ansible-playbook (`docs/design/MIGRATION_GUIDE.md`)
+  - CLI flag compatibility table, module support matrix, evaluation checklist
+- [x] Troubleshooting guide (`docs/design/TROUBLESHOOTING.md`)
+  - Runtime errors, build errors, test failures, performance issues
 - [ ] Community outreach
 
 #### Weeks 43+: Integration with Ansible Core (Planned)
@@ -383,6 +387,10 @@ GitHub Actions:
 - ✅ `ansiblers-executor::strategy::Strategy::Batch(n)`
 - ✅ `ansiblers-modules::module_cache` — `CachingModuleRegistry`, `InMemoryCache`, `SqliteCache`
 - ✅ `ansiblers-executor/benches/` — criterion benchmark suite
+- ✅ `docs/design/ARCHITECTURE.md` — updated with Phase 6 components
+- ✅ `docs/design/PERFORMANCE_TUNING.md` — strategies, caching, async fan-out, benchmarking
+- ✅ `docs/design/MIGRATION_GUIDE.md` — CLI compat, module matrix, evaluation checklist
+- ✅ `docs/design/TROUBLESHOOTING.md` — runtime, build, test, performance issues
 - ✅ 694 tests, 0 failures (up from 655)
 
 ---

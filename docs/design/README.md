@@ -40,6 +40,21 @@ Accelerate Ansible execution by 5-10x on performance-critical paths while mainta
    - Rewrite vs. wrapper decision framework
    - Phase-by-phase module roadmap
 
+5. **PERFORMANCE_TUNING.md**
+   - Execution strategies (Linear / Free / Batch(n))
+   - Async fan-out configuration
+   - Module result caching (InMemoryCache, SqliteCache)
+   - Criterion benchmark suite usage
+
+6. **MIGRATION_GUIDE.md**
+   - Drop-in CLI flag compatibility table
+   - Module support matrix
+   - Evaluation checklist for piloting ransible-playbook
+
+7. **TROUBLESHOOTING.md**
+   - Common runtime, build, test, and performance issues
+   - Quick diagnostic commands
+
 ---
 
 ## Quick Start: Getting Involved
@@ -442,6 +457,6 @@ For clarifications on specific sections:
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2026-06-09  
+**Document Version**: 1.0
+**Last Updated**: 2026-06-09
 **Status**: Ready for Review & Stakeholder Discussion

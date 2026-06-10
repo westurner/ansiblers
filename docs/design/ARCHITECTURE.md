@@ -127,15 +127,23 @@ ansiblers/
 **Key Features**:
 - Task parameter resolution
 - Conditional evaluation (when, failed_when, changed_when)
-- Pluggable connection architecture supporting standard SSH (`russh`) and WebRTC Zero-Trust PQ Transport.
-- WebRTC transport features PQ X25519MLKEM768 handshakes, W3C DIDs authorization, ML-DSA payload signatures, and Decentralized Merkle batching.
-- Support for both embedded signaling (masterless/libp2p) and external WebSocket signaling servers.
+- Pluggable `ConnectionProvider` trait — swap transport without changing executor logic
+- `ConnectionRegistry` — maps connection types to providers with local fallback
+- `ConnectionContext` — per-host parameters (host, port, user, SSH key, become)
+- `LocalConnectionProvider` — in-process execution (zero-overhead, default)
+- `SshConnectionProvider` — SSH subprocess transport with become support
+- Future: WebRTC Zero-Trust PQ Transport (X25519MLKEM768 handshakes, W3C DIDs, ML-DSA signatures)
+- Multi-host `Strategy` — `Linear` (default), `Free` (thread-per-host), `Batch(n)` (cap concurrency)
+- `execute_tasks_multi_host_async` — Tokio fan-out with `spawn_blocking` for CPU-bound work
 - Loop expansion (with_items, loop)
 - Delegation support
-- Connection pooling
 - Register variable capture
 
-**Dependencies**: All above crates
+**Key Modules**:
+- `connection` — `ConnectionProvider` trait, built-in providers, `ConnectionRegistry`
+- `strategy` — `Strategy` enum, multi-host execution functions
+
+**Dependencies**: All above crates, `tokio`
 
 ---
 
@@ -147,18 +155,23 @@ ansiblers/
 - **Phase 2**: High-value modules in Rust (command, shell, copy, file, etc.)
 - **Phase 3**: Advanced modules (package managers, cloud providers)
 - **Phase 4**: Implement a true **Preview Mode** by wrapping target execution in OS-level sandboxes (`bubblewrap`, `podman`, `crun`) enforcing read-only root mounts and recording OverlayFS diffs.
-- **Phase 5**:
-   - Abandon "compiled-on-target" logic. Instead, cross-compile "Rustball" transit payloads.
-   - Ship statically linked `musl` (`x86_64-unknown-linux-musl`) and WebAssembly (`wasm32-wasi`) targets
-   - **Zero-Extraction Payload**: Use `artifact-fs` to FUSE-mount payloads instead of unzipping on disk.
-   - DID:tdw signatures
+- **Phase 5**: Module rewrites — `apt`, `yum`, `find`, `template`, `lineinfile`, `setup`, `git`
+- **Phase 6**: Module result caching via `CachingModuleRegistry`
 
 **Key Types**:
 - `ModuleRegistry`: Maps module names to implementations
 - `ModuleInvoker`: Abstract trait for module execution
 - `PythonModuleWrapper`: Wraps Python modules via subprocess
+- `CachingModuleRegistry`: Wraps `ModuleRegistry`, caches results for idempotent modules
+- `ModuleResultCache`: Pluggable cache backend trait
+- `InMemoryCache`: HashMap-backed, thread-safe cache
+- `SqliteCache`: Persistent SQLite cache via `rusqlite`
+- `CACHEABLE_MODULES`: `stat`, `setup`, `gather_facts`, `find` (read-only / idempotent)
 
-**Dependencies**: Python subprocess interaction initially
+**Key Modules**:
+- `module_cache` — caching layer with `InMemoryCache`, `SqliteCache`, hit-ratio telemetry
+
+**Dependencies**: Python subprocess interaction initially, `rusqlite` (for `SqliteCache`)
 
 ---
 
@@ -287,16 +300,20 @@ ansiblers/
 
 ---
 
-### Phase 6: Performance Optimization & Integration (Months 6+)
+### Phase 6: Performance Optimization & Integration (Months 6+) ✅ COMPLETE (Weeks 33-40)
 **Goals**: Production-ready performance, integration with Ansible core
 
 **Deliverables**:
-- [ ] Connection pooling optimization
-- [ ] Parallel task execution (fan-out patterns)
-- [ ] Module execution batching
-- [ ] Integration tests with real Ansible workflows
-- [ ] Benchmarking suite
-- [ ] Documentation and adoption guide
+- ✅ `ConnectionProvider` trait — pluggable transport abstraction
+- ✅ `LocalConnectionProvider` and `SshConnectionProvider` built-in providers
+- ✅ `ConnectionRegistry` with per-host fallback to local
+- ✅ `Strategy::Batch(n)` — cap concurrent hosts at `n`
+- ✅ `execute_tasks_multi_host_async` — Tokio fan-out with `spawn_blocking`
+- ✅ `CachingModuleRegistry` with `InMemoryCache` and `SqliteCache` backends
+- ✅ Hit-ratio telemetry (`lookups`, `hits` counters)
+- ✅ Criterion benchmark suite (playbook execution + variable resolution)
+- ✅ Architecture documentation (this file), performance tuning guide, migration guide, troubleshooting guide
+- ⏳ WebRTC PQ transport (X25519MLKEM768, W3C DIDs, ML-DSA) — deferred
 
 ---
 
