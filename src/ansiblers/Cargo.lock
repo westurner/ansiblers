@@ -241,6 +241,7 @@ dependencies = [
  "anyhow",
  "insta",
  "jinja2rs",
+ "minijinja",
  "rstest",
  "serde",
  "serde_json",

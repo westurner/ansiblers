@@ -39,8 +39,13 @@
 //! `to_nice_json`, `to_nice_yaml`, `from_json`, `from_yaml`,
 //! `quote`, `path_join`, `upper`, `lower`, `default`, …
 
+pub mod backend;
 pub mod engine;
 
+pub use backend::{
+    render_via_minijinja, render_via_python, render_with_selected_backend, BackendSelector,
+    TemplateBackend,
+};
 pub use engine::{
     render_string, render_string_sandboxed, render_value, AnsibleTemplateEngine,
     TemplateEngineConfig, TrustLevel,

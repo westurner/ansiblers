@@ -313,7 +313,7 @@ GitHub Actions:
 
 ---
 
-## Phase 6: Zero-Trust WebRTC & Performance Optimization (Weeks 33+) ✅ WEEKS 33-42 COMPLETE
+## Phase 6: Zero-Trust WebRTC & Performance Optimization (Weeks 33+) ✅ WEEKS 33-43 COMPLETE
 
 ### Goals
 - ✅ Pluggable `ConnectionProvider` trait for transport abstraction
@@ -322,6 +322,10 @@ GitHub Actions:
 - ✅ Module result caching (`CachingModuleRegistry`, `InMemoryCache`, `SqliteCache`)
 - ✅ Benchmarking suite (`criterion`-based for playbooks, variables, multi-host)
 - ✅ Architecture, performance, migration, and troubleshooting documentation
+- ✅ Switchable template rendering backend (`Jinja2rs` / `Minijinja` / `PythonJinja2`)
+- ✅ `HotPathProfiler` — per-stage timing exposed to Python
+- ✅ `AsyncPlaybookRunner` — GIL-releasing PyO3 binding
+- ✅ `ContributionReport` — structured hot-path analysis for upstream contribution
 - ⏳ WebRTC PQ transport (`WebRtcPqConnection`) — deferred
 - ⏳ X25519MLKEM768 post-quantum handshakes — deferred
 - ⏳ W3C DID document resolution & ML-DSA payload signing — deferred
@@ -375,11 +379,16 @@ GitHub Actions:
   - Runtime errors, build errors, test failures, performance issues
 - [ ] Community outreach
 
-#### Weeks 43+: Integration with Ansible Core (Planned)
-- [ ] Identify hot paths for PyO3 optimization
-- [ ] Prototype template rendering backend switch
-- [ ] Module execution acceleration
-- [ ] Upstream contribution discussions
+#### Weeks 43+: Integration with Ansible Core ✅
+- [x] `TemplateBackend` enum: `Jinja2rs` (default, Ansible compat), `Minijinja` (raw, fastest), `PythonJinja2` (100% compat via subprocess)
+- [x] `BackendSelector` — select backend via `ANSIBLE_TEMPLATE_BACKEND` env var or API
+- [x] `render_via_minijinja` / `render_via_python` direct functions
+- [x] Cross-backend parity test suite (jinja2rs vs minijinja output comparison)
+- [x] `HotPathProfiler` (`PyHotPathProfiler`) — per-stage timing: `inventory_load`, `playbook_parse`, `execution`
+- [x] `AsyncPlaybookRunner` (`PyAsyncPlaybookRunner`) — GIL-releasing `run_sync()` entrypoint
+- [x] `ContributionReport` / `PyContributionReport` — structured speedup analysis with Markdown + JSON output
+- [x] `ContributionReportBuilder` — fluent builder API
+- [ ] Upstream contribution discussions with Ansible Core team
 
 ### Deliverables
 - ✅ `ansiblers-executor::connection` — `ConnectionProvider` trait + `Local`/`SSH` providers
@@ -388,10 +397,12 @@ GitHub Actions:
 - ✅ `ansiblers-modules::module_cache` — `CachingModuleRegistry`, `InMemoryCache`, `SqliteCache`
 - ✅ `ansiblers-executor/benches/` — criterion benchmark suite
 - ✅ `docs/design/ARCHITECTURE.md` — updated with Phase 6 components
-- ✅ `docs/design/PERFORMANCE_TUNING.md` — strategies, caching, async fan-out, benchmarking
+- ✅ `docs/design/PERFORMANCE_TUNING.md` — strategies, caching, async fan-out, benchmarking, backend switcher
 - ✅ `docs/design/MIGRATION_GUIDE.md` — CLI compat, module matrix, evaluation checklist
 - ✅ `docs/design/TROUBLESHOOTING.md` — runtime, build, test, performance issues
-- ✅ 694 tests, 0 failures (up from 655)
+- ✅ `ansiblers-templates::backend` — `TemplateBackend` (Jinja2rs/Minijinja/PythonJinja2), `BackendSelector`
+- ✅ `ansiblers-compat` — `HotPathProfiler`, `AsyncPlaybookRunner`, `ContributionReport`
+- ✅ 747 tests, 0 failures (up from 694)
 
 ---
 

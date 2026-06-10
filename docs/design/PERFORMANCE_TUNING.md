@@ -224,7 +224,41 @@ registry.register(std::sync::Arc::new(KubernetesExecProvider));
 
 ---
 
-## Benchmarking
+## Template Rendering Backends
+
+Ansiblers supports three Jinja2 rendering backends, selectable via
+`ANSIBLE_TEMPLATE_BACKEND` or via `BackendSelector` in the Rust API.
+
+| Backend | Env value | Description | Ansible filters | Speed |
+|---------|-----------|-------------|-----------------|-------|
+| `jinja2rs` | `jinja2rs`, `jinja2r2`, `compat` | jinja2rs with Ansible compat layer **(default)** | ✅ Full | ★★★★ |
+| `minijinja` | `minijinja`, `rust` | Raw minijinja, no compat wrapper | ❌ Built-ins only | ★★★★★ |
+| `python_jinja2` | `python`, `cpython` | CPython Jinja2 via `python3` subprocess | ✅ Full | ★ |
+
+```bash
+# Default (jinja2rs + Ansible compat filters):
+ransible-playbook site.yml
+
+# Raw minijinja — benchmark baseline:
+ANSIBLE_TEMPLATE_BACKEND=minijinja ransible-playbook site.yml
+
+# Python Jinja2 — 100% compatibility check:
+ANSIBLE_TEMPLATE_BACKEND=python ransible-playbook site.yml
+```
+
+```rust
+use ansiblers_templates::backend::{BackendSelector, TemplateBackend};
+use std::collections::HashMap;
+use serde_json::Value;
+
+// Programmatic backend selection:
+let sel = BackendSelector::new(TemplateBackend::Minijinja);
+let out = sel.render("{{ name | upper }}", &vars)?;
+```
+
+Use `TemplateBackend::Minijinja` for benchmarks to isolate raw parse/render cost
+from Ansible-filter overhead.  Use `Jinja2rs` in production — it is the same
+minijinja engine with Ansible-mode compat registered on top.
 
 Criterion benchmarks are included in `crates/ansiblers-executor/benches/`.
 
