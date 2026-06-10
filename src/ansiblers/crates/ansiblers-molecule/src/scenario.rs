@@ -1,4 +1,25 @@
-//! Scenario — a named test scenario (molecule/\<name\>/).
+//! [`Scenario`] — a named Molecule test scenario.
+//!
+//! A scenario corresponds to a `molecule/<name>/` directory containing a
+//! `molecule.yml` configuration file plus playbooks (`converge.yml`,
+//! optionally `prepare.yml`, `verify.yml`, `cleanup.yml`).
+//!
+//! ## Loading
+//!
+//! ```rust,no_run
+//! use std::path::Path;
+//! use ansiblers_molecule::scenario::Scenario;
+//!
+//! // From filesystem (requires molecule/<name>/molecule.yml to exist):
+//! let scenario = Scenario::load(Path::new("."), "default").unwrap();
+//!
+//! // From in-memory config (no files needed — useful for unit tests):
+//! use ansiblers_molecule::config::MoleculeConfig;
+//! use ansiblers_molecule::driver::DriverKind;
+//! let mut cfg = MoleculeConfig::default_docker("instance", "ubuntu:24.04");
+//! cfg.driver.name = DriverKind::None;
+//! let scenario = Scenario::from_config("unit", cfg);
+//! ```
 
 use std::path::{Path, PathBuf};
 

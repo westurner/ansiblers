@@ -1,18 +1,49 @@
-//! ansiblers-compat — PyO3 bindings exposing ansiblers to Python.
+//! `ansiblers-compat` — PyO3 Python bindings for ansiblers.
 //!
-//! Provides a `ansiblers` Python module with:
-//! - `PlaybookRunner`: execute playbooks from Python.
-//! - `InventoryLoader`: load INI/YAML inventories from Python.
-//! - `TaskResult`: returned from `run_playbook()`.
+//! Exposes a `ansiblers` Python extension module that provides a high-level
+//! interface to the Rust playbook engine.  Build with
+//! [Maturin](https://www.maturin.rs/) to produce an importable wheel:
 //!
-//! # Usage (Python)
+//! ```bash
+//! maturin build --features extension-module
+//! pip install target/wheels/ansiblers_compat-*.whl
+//! ```
+//!
+//! ## Python API
+//!
 //! ```python
 //! import ansiblers
 //!
-//! runner = ansiblers.PlaybookRunner(inventory="inventory.ini")
+//! # Run a playbook:
+//! runner = ansiblers.PlaybookRunner(inventory="inventory.ini", verbosity=1)
+//! runner.set_var("env", "staging")
 //! result = runner.run("site.yml")
 //! print(f"success={result.success}")
+//! for task in result.all_results():
+//!     print(f"  {task.host}: {task.status} changed={task.changed}")
+//!
+//! # Inspect an inventory:
+//! inv = ansiblers.InventoryLoader("inventory.yml")
+//! print(inv.hosts())          # ["web1", "web2", "db1"]
+//! print(inv.groups())         # ["all", "webservers", "databases"]
+//! print(inv.matching_hosts("webservers"))  # ["web1", "web2"]
+//! vars = inv.host_vars("web1")  # dict of merged host/group variables
 //! ```
+//!
+//! ## Classes
+//!
+//! | Python class | Rust type | Description |
+//! |--------------|-----------|-------------|
+//! | `PlaybookRunner` | [`PyPlaybookRunner`] | Execute playbooks |
+//! | `PlaybookResult` | [`PyPlaybookResult`] | Return value of `run()` |
+//! | `TaskResult` | [`PyTaskResult`] | Per-task outcome |
+//! | `InventoryLoader` | [`PyInventoryLoader`] | Inspect inventory |
+//!
+//! ## Feature flags
+//!
+//! Enable `extension-module` when building with Maturin to produce a shared
+//! library loadable by Python.  Without this flag the crate compiles as a
+//! plain Rust library usable in tests.
 
 use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyList};
@@ -72,6 +103,11 @@ impl PyTaskResult {
 // PyPlaybookResult
 // ---------------------------------------------------------------------------
 
+/// Python-facing playbook result returned by [`PyPlaybookRunner::run`].
+///
+/// The `success` attribute mirrors [`PlaybookResult::success`].  Call
+/// `all_results()` to get a flat list of every [`PyTaskResult`] across
+/// all plays and hosts.
 #[pyclass(name = "PlaybookResult")]
 pub struct PyPlaybookResult {
     #[pyo3(get)]

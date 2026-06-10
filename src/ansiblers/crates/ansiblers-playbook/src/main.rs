@@ -1,7 +1,33 @@
 //! `ransible-playbook` — drop-in Rust replacement for `ansible-playbook`.
 //!
-//! Phase 1 supports: local task execution (localhost), shell, command, debug,
-//! set_fact, and fail modules, with variable resolution and jinja2rs templating.
+//! ## Supported features (Phase 2)
+//!
+//! - Playbook parsing (plays, tasks, blocks, handlers, loops, when, register)
+//! - Inventory loading (INI and YAML formats, group/host vars)
+//! - Variable resolution with full 9-tier Ansible precedence
+//! - Template rendering via `jinja2rs` (minijinja + Ansible filters)
+//! - Modules: `shell`, `command`, `debug`, `set_fact`, `fail`, `file`,
+//!   `copy`, `stat`
+//! - Multi-host execution (Linear and Free strategies)
+//! - Block / rescue / always control flow
+//! - Extra vars (`-e key=value` or `-e '{"key": "value"}'`)
+//! - JSON output (`--json`)
+//!
+//! ## Usage
+//!
+//! ```bash
+//! ransible-playbook -i inventory.ini site.yml
+//! ransible-playbook -i inventory.yml deploy.yml -e env=prod --json
+//! ransible-playbook -i hosts playbook.yml -vv
+//! ```
+//!
+//! ## Exit codes
+//!
+//! | Code | Meaning |
+//! |------|---------|
+//! | 0 | All plays succeeded |
+//! | 1 | Fatal error (parse failure, I/O error) |
+//! | 2 | One or more tasks failed |
 
 use std::collections::HashMap;
 use std::process;

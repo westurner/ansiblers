@@ -1,4 +1,40 @@
-//! Driver trait and implementations (Docker, Podman, None).
+//! Driver trait and built-in implementations (Docker, Podman, None).
+//!
+//! A [`Driver`] manages the lifecycle of [`Instance`]s — creating and destroying
+//! containers (or local processes) that the Molecule scenario runs against.
+//!
+//! ## Choosing a driver
+//!
+//! | [`DriverKind`] | Isolation | Requires root | Use case |
+//! |----------------|-----------|---------------|----------|
+//! | `Docker` | Full container | No (rootful Docker) | Standard CI |
+//! | `Podman` | Full container | No (rootless) | Security-conscious CI |
+//! | `None` | None | No | Fast local testing |
+//!
+//! ## Implementing a custom driver
+//!
+//! ```rust,no_run
+//! use ansiblers_molecule::driver::{Driver, DriverKind, Instance, InstanceState};
+//! use anyhow::Result;
+//!
+//! struct MyDriver;
+//!
+//! impl Driver for MyDriver {
+//!     fn kind(&self) -> DriverKind { DriverKind::None }
+//!     fn create(&self, instance: &mut Instance) -> Result<()> {
+//!         instance.state = InstanceState::Running;
+//!         Ok(())
+//!     }
+//!     fn destroy(&self, instance: &mut Instance) -> Result<()> {
+//!         instance.state = InstanceState::Absent;
+//!         Ok(())
+//!     }
+//!     fn status(&self, _name: &str) -> Result<InstanceState> {
+//!         Ok(InstanceState::Running)
+//!     }
+//!     fn list(&self) -> Result<Vec<Instance>> { Ok(vec![]) }
+//! }
+//! ```
 
 use std::collections::HashMap;
 use std::process::Command;
@@ -10,6 +46,7 @@ use serde::{Deserialize, Serialize};
 // Core types
 // ---------------------------------------------------------------------------
 
+/// Selects which container backend creates and destroys [`Instance`]s.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum DriverKind {
@@ -92,6 +129,11 @@ pub trait Driver: Send + Sync {
 // Docker driver
 // ---------------------------------------------------------------------------
 
+/// Docker-backed driver.
+///
+/// Creates containers with `docker run --detach --label molecule=true` and
+/// destroys them with `docker rm -f`.  Labels are used to enumerate all
+/// molecule-managed containers via `docker ps --filter label=molecule=true`.
 pub struct DockerDriver;
 
 impl Driver for DockerDriver {
@@ -201,6 +243,10 @@ impl Driver for DockerDriver {
 // Podman driver
 // ---------------------------------------------------------------------------
 
+/// Podman-backed driver (rootless containers).
+///
+/// Behaves identically to [`DockerDriver`] but invokes `podman` instead of
+/// `docker`.  Suitable for CI environments that require rootless operation.
 pub struct PodmanDriver;
 
 impl Driver for PodmanDriver {

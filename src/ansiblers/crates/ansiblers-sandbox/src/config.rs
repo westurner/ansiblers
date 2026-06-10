@@ -4,7 +4,32 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
-/// Which sandbox layers are enabled.
+/// Top-level sandbox configuration; compose which layers are active.
+///
+/// Each layer is independently opt-in.  Use [`SandboxConfig::full`] for maximum
+/// isolation or one of the convenience constructors for common scenarios:
+///
+/// | Constructor | Layers active | Use case |
+/// |-------------|--------------|----------|
+/// | [`disabled`](Self::disabled) | none | Trusted environment (default) |
+/// | [`template_only`](Self::template_only) | Layer 1 | CI, no root needed |
+/// | [`module_isolation`](Self::module_isolation) | Layer 2 | Untrusted modules, no kernel seccomp |
+/// | [`full`](Self::full) | 1 + 2 + 3 | Maximum isolation |
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use ansiblers_sandbox::config::SandboxConfig;
+///
+/// // Enable all three layers:
+/// let cfg = SandboxConfig::full();
+/// assert!(cfg.template.enabled && cfg.module.enabled && cfg.process.enabled);
+///
+/// // Just wrap modules in bwrap:
+/// let cfg = SandboxConfig::module_isolation();
+/// assert!(cfg.module.enabled);
+/// assert!(!cfg.process.enabled);
+/// ```
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct SandboxConfig {
     /// Layer 1: restrict template rendering via jinja2rs SandboxedEnvironment.

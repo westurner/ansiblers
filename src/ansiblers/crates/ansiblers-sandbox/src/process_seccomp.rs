@@ -2,32 +2,58 @@
 //!
 //! ## Design rationale
 //!
-//! The ansiblers coordinator process does NOT need to:
-//! - Call `ptrace` (debug other processes)
-//! - Load kernel modules (`init_module`, `finit_module`)
-//! - Reboot (`reboot`, `kexec_load`)
-//! - Manipulate user IDs (`setuid`, `setgid`, `setresuid` — already running as
-//!   the playbook user)
-//! - Access kernel keyrings (`keyctl`, `add_key`, `request_key`)
-//! - Create device files (`mknod`)
-//! - Mount filesystems (`mount`, `umount2`) — bwrap does that in a child
+//! The ansiblers coordinator process does **not** need to:
+//!
+//! | Capability | Syscalls denied |
+//! |------------|----------------|
+//! | Debug other processes | `ptrace`, `process_vm_readv/writev` |
+//! | Load kernel modules | `init_module`, `finit_module`, `delete_module` |
+//! | Reboot / kexec | `reboot`, `kexec_load`, `kexec_file_load` |
+//! | Change user identity | `setuid`, `setgid`, `setresuid`, `setresgid`, `setfsuid`, `setfsgid` |
+//! | Access kernel keyrings | `keyctl`, `add_key`, `request_key` |
+//! | Create device files | `mknod`, `mknodat` |
+//! | Mount filesystems | `mount`, `umount2` (bwrap does this in child namespaces) |
+//! | eBPF programs | `bpf` |
+//! | Performance counters | `perf_event_open` |
 //!
 //! Applying seccomp to the coordinator before executing any modules provides a
-//! last-resort containment: even if a module bypasses its bwrap container via
-//! a shared-memory channel or library injection, it cannot escalate via the
-//! coordinator's elevated file descriptors.
+//! last-resort containment: even if a module bypasses its bwrap container, it
+//! cannot escalate via the coordinator's elevated file descriptors.
 //!
-//! ## Availability
+//! ## Usage
 //!
-//! This module is compiled when the `seccomp` feature is enabled.
-//! It falls back to a no-op when the feature is absent, so callers don't need
-//! `#[cfg(feature = "seccomp")]` guards.
+//! Call [`apply_process_seccomp`] **once at startup**, before any module
+//! execution begins.  Once applied, the filter cannot be removed.
+//!
+//! ```rust,no_run
+//! use ansiblers_sandbox::process_seccomp::{apply_process_seccomp, ProcessSeccompProfile};
+//!
+//! // Deny-list of dangerous syscalls (recommended default):
+//! apply_process_seccomp(ProcessSeccompProfile::Coordinator).unwrap();
+//!
+//! // Strict allow-list (only ~70 syscalls permitted):
+//! apply_process_seccomp(ProcessSeccompProfile::Strict).unwrap();
+//! ```
+//!
+//! ## Feature gate
+//!
+//! Requires `ansiblers-sandbox/seccomp` feature (links `libseccomp 2.5+`).
+//! Without it, [`apply_process_seccomp`] is a **no-op** that emits a
+//! `tracing::warn!` — no panics, no compilation failure.
 
 use anyhow::Result;
 
 use crate::config::ProcessSeccompLevel;
 
 /// Pre-built seccomp profiles for the ansiblers coordinator process.
+///
+/// Choose between a targeted deny-list ([`Coordinator`](Self::Coordinator)) that
+/// only blocks proven-dangerous syscalls, or a strict allow-list
+/// ([`Strict`](Self::Strict)) that only permits syscalls the coordinator
+/// actually needs.
+///
+/// The `Coordinator` profile is recommended for production; use `Strict` only
+/// if you are confident in the allow-list coverage.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ProcessSeccompProfile {
     /// Deny the most dangerous syscalls while allowing normal coordinator ops.

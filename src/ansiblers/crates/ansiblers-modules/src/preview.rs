@@ -23,6 +23,26 @@ use crate::registry::{ModuleArgs, ModuleInvoker};
 // ---------------------------------------------------------------------------
 
 /// Wraps another [`ModuleInvoker`] in a bubblewrap sandbox.
+///
+/// When [`enabled`](Self::enabled) is `true` (auto-detected from `bwrap`
+/// availability), each invocation runs inside a `bwrap` container:
+///
+/// - `/` is bind-mounted **read-only**.
+/// - An OverlayFS `upperdir` captures all filesystem writes.
+/// - [`TaskResult::vars`]`[\"_diff\"]` contains the list of changed paths.
+///
+/// This is the lightweight "preview" mode (`--diff` / `--check` emulation).
+/// For full isolation with seccomp, use [`ansiblers_sandbox::SandboxedModuleRegistry`].
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use ansiblers_modules::{PreviewModeWrapper, ModuleInvoker};
+/// use ansiblers_modules::shell::ShellModule;
+///
+/// // Wraps ShellModule; falls back to direct execution if bwrap is absent.
+/// let wrapped = PreviewModeWrapper::new(ShellModule);
+/// ```
 pub struct PreviewModeWrapper<Inner: ModuleInvoker> {
     inner: Inner,
     pub enabled: bool,

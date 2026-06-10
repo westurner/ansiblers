@@ -1,4 +1,39 @@
-//! Lifecycle phases and the ScenarioRunner that sequences them.
+//! Lifecycle phases and the [`ScenarioRunner`] that sequences them.
+//!
+//! ## Phase sequence
+//!
+//! The default test sequence is:
+//!
+//! ```text
+//! Create → Prepare → Converge → Idempotence → Verify → Cleanup → Destroy
+//! ```
+//!
+//! | Phase | Playbook | Notes |
+//! |-------|----------|-------|
+//! | `Create` | — | Driver creates instances |
+//! | `Prepare` | `prepare.yml` | Optional; skipped if absent |
+//! | `Converge` | `converge.yml` | Apply the role/playbook under test |
+//! | `Idempotence` | `converge.yml` | Re-run; checks no tasks report `changed` |
+//! | `Verify` | `verify.yml` | Assertions; skipped if absent |
+//! | `Cleanup` | `cleanup.yml` | Optional; skipped if absent |
+//! | `Destroy` | — | Driver destroys instances |
+//!
+//! ## Failure recovery
+//!
+//! When any phase fails, `ScenarioRunner` automatically runs `Destroy` as a
+//! best-effort cleanup before returning the failed [`ScenarioResult`].
+//!
+//! ## Running subsets
+//!
+//! Use [`ScenarioRunner::run_sequence`] to run an explicit slice of phases:
+//!
+//! ```rust,ignore
+//! use ansiblers_molecule::lifecycle::{LifecyclePhase, ScenarioRunner};
+//!
+//! let runner = ScenarioRunner::new();
+//! // Only create + converge (no verify/destroy):
+//! runner.run_sequence(&mut scenario, &[LifecyclePhase::Create, LifecyclePhase::Converge]);
+//! ```
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -197,6 +232,7 @@ impl Default for ScenarioRunner {
 // Result types
 // ---------------------------------------------------------------------------
 
+/// Result of a single lifecycle phase.
 #[derive(Debug)]
 pub struct PhaseResult {
     pub phase: LifecyclePhase,
@@ -212,6 +248,10 @@ impl PhaseResult {
     }
 }
 
+/// Aggregated result for a complete scenario run.
+///
+/// Contains a [`PhaseResult`] for every phase that was attempted.
+/// [`ScenarioResult::success`] is `false` if any phase failed.
 #[derive(Debug)]
 pub struct ScenarioResult {
     pub scenario_name: String,

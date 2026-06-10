@@ -1,50 +1,43 @@
-//! Layer 2: Module sandbox — bwrap container with optional seccomp profile.
+//! Layer 2: Module sandbox — bubblewrap (bwrap) container with optional seccomp BPF.
 //!
-//! `SandboxedModuleRegistry` wraps an `ansiblers_modules::ModuleRegistry` and
-//! intercepts every module invocation that spawns a subprocess (Python modules,
-//! shell/command) to run it inside a bubblewrap container.
+//! [`SandboxedModuleRegistry`] wraps an [`ansiblers_modules::ModuleRegistry`] and
+//! intercepts subprocess modules (`shell`, `command`, `raw`) to execute them
+//! inside a bubblewrap container.
 //!
-//! ## bwrap invocation
-//!
-//! The bwrap arguments are built as follows:
+//! ## bwrap invocation arguments
 //!
 //! ```text
 //! bwrap
-//!   --ro-bind / /              # bind-mount read-only root
-//!   --overlay <upper> <work> / # OverlayFS for writes (diff capture)
+//!   --ro-bind / /              ← read-only root
+//!   --overlay <upper> <work> / ← OverlayFS (all writes captured)
 //!   --proc /proc
 //!   --dev /dev
-//!   --tmpfs /tmp               # private writable /tmp
-//!   [--unshare-net]            # network isolation (configurable)
-//!   [--unshare-uts]            # hostname isolation
-//!   [--seccomp <fd>]           # BPF filter file descriptor
-//!   -- <module_cmd>
+//!   --tmpfs /tmp               ← private /tmp
+//!   [--unshare-net]            ← network isolation (configurable)
+//!   [--unshare-uts]            ← hostname isolation
+//!   [--seccomp <fd>]           ← BPF filter (optional, see below)
+//!   -- /bin/sh <script>
 //! ```
 //!
-//! ## Seccomp profile injection
+//! ## Seccomp BPF injection
 //!
-//! When `config.seccomp_profile != BwrapSeccompProfile::None`, we:
-//! 1. Build a libseccomp BPF bytecode blob in memory.
-//! 2. Write it to a temp file.
-//! 3. Pass `--seccomp <fd>` to bwrap (bwrap reads and applies it to the
-//!    contained process before exec).
+//! When [`ModuleSandboxConfig::seccomp_profile`] is not [`BwrapSeccompProfile::None`],
+//! a libseccomp BPF blob is written to a temp file and passed to bwrap via
+//! `--seccomp <path>`.  The contained process inherits the filter before
+//! `execve` runs, so even a malicious module binary cannot call denied syscalls.
 //!
-//! This means the module process inherits a seccomp filter **in addition to**
-//! the namespace isolation bwrap provides.  Even if the module breaks out of
-//! the overlay, it cannot use ptrace, setuid, or mount.
+//! ## OverlayFS diff capture
 //!
-//! ## Ansible module syscall profile
+//! All filesystem changes made inside the container land in the OverlayFS
+//! `upperdir`.  After the module exits, [`collect_diff`] walks the upperdir
+//! and stores changed paths in `TaskResult::vars["_diff"]`, emulating
+//! Ansible `--diff` mode.
 //!
-//! The `AnsibleModule` profile allows the syscalls that standard Ansible
-//! modules need:
-//! - File I/O: `read`, `write`, `open`/`openat`, `close`, `stat`, `lstat`
-//! - Process: `fork`, `execve`, `wait4`, `exit_group`, `getpid`
-//! - Networking (for cloud/API modules): `socket`, `connect`, `sendto`, `recvfrom`
-//! - Memory: `brk`, `mmap`, `munmap`, `mprotect`
-//! - JSON parsing: `futex` (Rust/Python mutexes), `clock_gettime`
+//! ## Pure-Rust modules bypass bwrap
 //!
-//! Denied: `ptrace`, `kexec_load`, `init_module`, `keyctl`, `setuid`,
-//!         `mount`, `umount2`, `bpf`, `perf_event_open`.
+//! Modules like `debug`, `set_fact`, `file`, `copy`, and `stat` are pure Rust
+//! and never spawn subprocesses.  They are invoked directly to avoid the
+//! bwrap fork overhead.
 
 use std::collections::HashMap;
 use std::io::Write;
@@ -61,8 +54,28 @@ use crate::config::{BwrapSeccompProfile, ModuleSandboxConfig};
 // SandboxedModuleRegistry
 // ---------------------------------------------------------------------------
 
-/// A `ModuleRegistry`-compatible wrapper that runs each module invocation
-/// inside a bubblewrap container.
+/// A [`ModuleRegistry`]-compatible wrapper that runs subprocess modules inside
+/// bubblewrap containers.
+///
+/// Only subprocess modules (`shell`, `command`, `raw`, `script`) are wrapped
+/// in bwrap.  Pure-Rust modules (`debug`, `set_fact`, `file`, `copy`, `stat`)
+/// are invoked directly to avoid fork overhead.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use ansiblers_sandbox::layers::SandboxedModuleRegistry;
+/// use ansiblers_sandbox::config::ModuleSandboxConfig;
+/// use ansiblers_sandbox::config::BwrapSeccompProfile;
+///
+/// let config = ModuleSandboxConfig {
+///     enabled: true,
+///     unshare_network: true,
+///     seccomp_profile: BwrapSeccompProfile::AnsibleModule,
+///     ..Default::default()
+/// };
+/// let registry = SandboxedModuleRegistry::with_defaults(config);
+/// ```
 pub struct SandboxedModuleRegistry {
     inner: ModuleRegistry,
     config: ModuleSandboxConfig,

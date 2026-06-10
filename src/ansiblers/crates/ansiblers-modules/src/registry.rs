@@ -16,6 +16,9 @@ use crate::shell::ShellModule;
 use crate::stat::StatModule;
 
 /// Arguments passed to a module at invocation time.
+///
+/// `args` holds the rendered key/value parameters from the task YAML.
+/// `task_name` is populated from `task.name` for use in error messages.
 #[derive(Debug, Clone)]
 pub struct ModuleArgs {
     pub args: HashMap<String, ansiblers_core::Value>,
@@ -40,6 +43,14 @@ impl ModuleArgs {
 }
 
 /// Trait implemented by every module.
+///
+/// Each implementation corresponds to one Ansible module name (e.g. `"shell"`,
+/// `"copy"`, `"apt"`).  Modules receive rendered arguments, the target
+/// hostname, and mutable access to the [`ExecutionContext`] (to write facts
+/// via `set_fact` or read registered variables).
+///
+/// All built-in modules are synchronous and blocking.  Async support is planned
+/// for Phase 6 (WebRTC transport).
 pub trait ModuleInvoker: Send + Sync {
     /// Execute the module synchronously for a single host.
     fn invoke(
@@ -51,6 +62,17 @@ pub trait ModuleInvoker: Send + Sync {
 }
 
 /// Registry that maps module names → [`ModuleInvoker`] implementations.
+///
+/// Use [`ModuleRegistry::with_defaults`] to get a registry pre-populated with
+/// all Phase 1+2 built-in Rust modules.  Additional modules (Python wrappers,
+/// custom Rust modules) can be registered at runtime via [`register`](Self::register).
+///
+/// # Fallback strategy
+///
+/// Unregistered modules return a failed [`TaskResult`] with `"module not found"`
+/// rather than panicking.  To support arbitrary Python modules transparently,
+/// wrap the registry with a [`ConfigurablePythonInvoker`](crate::ConfigurablePythonInvoker)
+/// as the default invoker.
 pub struct ModuleRegistry {
     modules: HashMap<String, Arc<dyn ModuleInvoker>>,
 }

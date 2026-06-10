@@ -85,8 +85,23 @@ impl<'ctx> VariableResolver<'ctx> {
     }
 }
 
-/// Variable resolver that operates without a full ExecutionContext — useful
-/// for unit-testing the resolver in isolation.
+/// Variable resolver that operates without a full [`ExecutionContext`] — useful
+/// for unit-testing the resolver in isolation or for static analysis tools.
+///
+/// Variables are added as named scopes and merged in [`VarScope`] precedence
+/// order when [`merged`](Self::merged) is called.
+///
+/// # Example
+///
+/// ```rust
+/// use ansiblers_vars::{StandaloneResolver, VarScope};
+/// use serde_json::Value;
+///
+/// let mut r = StandaloneResolver::new();
+/// r.set(VarScope::PlayVars, "greeting", Value::String("hello".into()));
+/// r.set(VarScope::ExtraVars, "greeting", Value::String("override".into()));
+/// assert_eq!(r.get("greeting"), Some(Value::String("override".into())));
+/// ```
 pub struct StandaloneResolver {
     layers: Vec<(VarScope, HashMap<String, Value>)>,
 }

@@ -1,4 +1,20 @@
-//! Molecule scenario configuration (molecule/default/molecule.yml equivalent).
+//! Molecule scenario configuration — equivalent to `molecule/default/molecule.yml`.
+//!
+//! The [`MoleculeConfig`] struct is the root of every scenario and mirrors the
+//! YAML schema used by the Python Molecule tool.  It can be loaded from a file
+//! with [`MoleculeConfig::from_file`] or constructed in-memory with
+//! [`MoleculeConfig::default_docker`] (useful for tests that don't need a
+//! configuration file on disk).
+//!
+//! ## Key sub-types
+//!
+//! | Type | YAML key | Purpose |
+//! |------|----------|---------|
+//! | [`DriverConfig`] | `driver:` | Which backend to use |
+//! | [`PlatformConfig`] | `platforms:` | Container image and options |
+//! | [`ProvisionerConfig`] | `provisioner:` | Ansible provisioner settings |
+//! | [`VerifierConfig`] | `verifier:` | Verification method |
+//! | [`ScenarioConfig`] | `scenario:` | Custom test sequence |
 
 use std::collections::HashMap;
 use std::path::PathBuf;
