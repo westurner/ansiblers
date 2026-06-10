@@ -325,10 +325,13 @@ GitHub Actions:
 
 #### Weeks 33-34: Pluggable Transport & WebRTC
 - [ ] Abstract connection providers (`ConnectionProvider` trait)
-- [ ] WebRTC Data Channel implementation (`WebRtcPqConnection`)
-- [ ] X25519MLKEM768 post-quantum cryptographic handshakes
-- [ ] W3C DID document resolution & payload signing (ML-DSA)
-- [ ] Embedded (masterless mesh) and external Signaling providers
+
+- Defer these:
+  - [ ] WebRTC Data Channel implementation (`WebRtcPqConnection`)
+  - [ ] X25519MLKEM768 post-quantum cryptographic handshakes
+  - [ ] W3C DID document resolution & payload signing (ML-DSA)
+  - [ ] Embedded (masterless mesh) and external Signaling providers
+
 
 #### Weeks 35-36: Parallel Execution
 - [ ] Fan-out parallelization
