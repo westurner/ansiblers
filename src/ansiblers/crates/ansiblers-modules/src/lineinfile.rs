@@ -77,8 +77,9 @@ impl ModuleInvoker for LineinfileModule {
             "absent" => remove_lines(&mut lines, regexp.as_deref(), line.as_deref()),
             _ => {
                 // present
-                let new_line =
-                    line.as_deref().ok_or_else(|| anyhow::anyhow!("lineinfile: 'line' is required for state=present"))?;
+                let new_line = line.as_deref().ok_or_else(|| {
+                    anyhow::anyhow!("lineinfile: 'line' is required for state=present")
+                })?;
                 insert_or_replace(
                     &mut lines,
                     new_line,
@@ -180,7 +181,10 @@ fn insert_or_replace(
         if before == "BOF" {
             lines.insert(0, new_line.to_string());
         } else {
-            let idx = lines.iter().position(|l| regex_matches(before, l)).unwrap_or(0);
+            let idx = lines
+                .iter()
+                .position(|l| regex_matches(before, l))
+                .unwrap_or(0);
             lines.insert(idx, new_line.to_string());
         }
         return true;
@@ -217,7 +221,9 @@ fn insert_or_replace(
 // ---------------------------------------------------------------------------
 
 fn regex_matches(pattern: &str, text: &str) -> bool {
-    fancy_regex::Regex::new(pattern).map(|re| re.is_match(text).unwrap_or(false)).unwrap_or(false)
+    fancy_regex::Regex::new(pattern)
+        .map(|re| re.is_match(text).unwrap_or(false))
+        .unwrap_or(false)
 }
 
 /// Very basic back-reference application: replace `\1` `\2` etc. in
@@ -241,7 +247,10 @@ fn apply_backrefs(pattern: &str, text: &str, replacement: &str) -> String {
 }
 
 fn bool_arg(args: &ModuleArgs, key: &str, default: bool) -> bool {
-    args.args.get(key).and_then(|v| v.as_bool()).unwrap_or(default)
+    args.args
+        .get(key)
+        .and_then(|v| v.as_bool())
+        .unwrap_or(default)
 }
 
 #[cfg(test)]

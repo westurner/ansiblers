@@ -54,8 +54,8 @@ impl ModuleInvoker for TemplateModule {
         // ------------------------------------------------------------------
         // Read template source
         // ------------------------------------------------------------------
-        let template_text =
-            std::fs::read_to_string(&src).with_context(|| format!("template: cannot read '{src}'"))?;
+        let template_text = std::fs::read_to_string(&src)
+            .with_context(|| format!("template: cannot read '{src}'"))?;
 
         // ------------------------------------------------------------------
         // Build render context from the ExecutionContext
@@ -105,8 +105,9 @@ impl ModuleInvoker for TemplateModule {
 
         // Apply mode if specified.
         if let Some(mode) = mode_str {
-            let bits = u32::from_str_radix(mode.trim_start_matches("0o").trim_start_matches('0'), 8)
-                .with_context(|| format!("template: invalid mode '{mode}'"))?;
+            let bits =
+                u32::from_str_radix(mode.trim_start_matches("0o").trim_start_matches('0'), 8)
+                    .with_context(|| format!("template: invalid mode '{mode}'"))?;
             std::fs::set_permissions(dest_path, std::fs::Permissions::from_mode(bits))?;
         }
 
@@ -117,7 +118,10 @@ impl ModuleInvoker for TemplateModule {
 }
 
 fn bool_arg(args: &ModuleArgs, key: &str, default: bool) -> bool {
-    args.args.get(key).and_then(|v| v.as_bool()).unwrap_or(default)
+    args.args
+        .get(key)
+        .and_then(|v| v.as_bool())
+        .unwrap_or(default)
 }
 
 #[cfg(test)]
@@ -173,8 +177,14 @@ mod tests {
 
         let mut ctx = make_ctx();
         let mut m = HashMap::new();
-        m.insert("src".to_string(), Value::String(src.to_str().unwrap().to_string()));
-        m.insert("dest".to_string(), Value::String(dest.to_str().unwrap().to_string()));
+        m.insert(
+            "src".to_string(),
+            Value::String(src.to_str().unwrap().to_string()),
+        );
+        m.insert(
+            "dest".to_string(),
+            Value::String(dest.to_str().unwrap().to_string()),
+        );
         m.insert("force".to_string(), Value::Bool(false));
         let args = ModuleArgs::new(m);
 
@@ -194,8 +204,14 @@ mod tests {
 
         let mut ctx = make_ctx();
         let mut m = HashMap::new();
-        m.insert("src".to_string(), Value::String(src.to_str().unwrap().to_string()));
-        m.insert("dest".to_string(), Value::String(dest.to_str().unwrap().to_string()));
+        m.insert(
+            "src".to_string(),
+            Value::String(src.to_str().unwrap().to_string()),
+        );
+        m.insert(
+            "dest".to_string(),
+            Value::String(dest.to_str().unwrap().to_string()),
+        );
         m.insert("backup".to_string(), Value::Bool(true));
         let args = ModuleArgs::new(m);
 

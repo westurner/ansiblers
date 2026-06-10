@@ -84,7 +84,10 @@ impl ModuleInvoker for AptModule {
         }
 
         if packages.is_empty() && !autoremove {
-            return Ok(TaskResult::failed(host, "apt: no package names provided".to_string()));
+            return Ok(TaskResult::failed(
+                host,
+                "apt: no package names provided".to_string(),
+            ));
         }
 
         // ------------------------------------------------------------------
@@ -137,7 +140,10 @@ fn collect_packages(args: &ModuleArgs) -> Vec<String> {
 }
 
 fn bool_arg(args: &ModuleArgs, key: &str, default: bool) -> bool {
-    args.args.get(key).and_then(|v| v.as_bool()).unwrap_or(default)
+    args.args
+        .get(key)
+        .and_then(|v| v.as_bool())
+        .unwrap_or(default)
 }
 
 /// Check whether a package is currently installed via `dpkg-query`.
@@ -199,10 +205,20 @@ fn apt_install(pkgs: &[String], upgrade: bool, recommends: bool, host: &str) -> 
     let status = cmd.status().context("failed to run apt-get install")?;
     if status.success() {
         let mut r = TaskResult::changed(host);
-        r.msg = format!("installed: {}", needs_action.iter().map(|p| p.as_str()).collect::<Vec<_>>().join(", "));
+        r.msg = format!(
+            "installed: {}",
+            needs_action
+                .iter()
+                .map(|p| p.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
         Ok(r)
     } else {
-        Ok(TaskResult::failed(host, format!("apt-get install failed with {status}")))
+        Ok(TaskResult::failed(
+            host,
+            format!("apt-get install failed with {status}"),
+        ))
     }
 }
 
@@ -222,10 +238,20 @@ fn apt_remove(pkgs: &[String], purge: bool, host: &str) -> Result<TaskResult> {
     let status = cmd.status().context("failed to run apt-get remove")?;
     if status.success() {
         let mut r = TaskResult::changed(host);
-        r.msg = format!("removed: {}", installed.iter().map(|p| p.as_str()).collect::<Vec<_>>().join(", "));
+        r.msg = format!(
+            "removed: {}",
+            installed
+                .iter()
+                .map(|p| p.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
         Ok(r)
     } else {
-        Ok(TaskResult::failed(host, format!("apt-get remove failed with {status}")))
+        Ok(TaskResult::failed(
+            host,
+            format!("apt-get remove failed with {status}"),
+        ))
     }
 }
 
@@ -239,7 +265,10 @@ fn apt_build_dep(pkgs: &[String], host: &str) -> Result<TaskResult> {
     if status.success() {
         Ok(TaskResult::changed(host))
     } else {
-        Ok(TaskResult::failed(host, format!("apt-get build-dep failed with {status}")))
+        Ok(TaskResult::failed(
+            host,
+            format!("apt-get build-dep failed with {status}"),
+        ))
     }
 }
 
@@ -251,7 +280,10 @@ fn run_autoremove(host: &str) -> Result<TaskResult> {
     if status.success() {
         Ok(TaskResult::changed(host))
     } else {
-        Ok(TaskResult::failed(host, format!("apt-get autoremove failed with {status}")))
+        Ok(TaskResult::failed(
+            host,
+            format!("apt-get autoremove failed with {status}"),
+        ))
     }
 }
 

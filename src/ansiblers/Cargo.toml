@@ -76,6 +76,7 @@ clap = { version = "4.5", features = ["derive"] }
 # Utilities
 regex = "1"
 fancy-regex = "0.18"
+rusqlite = { version = "0.40", features = ["bundled"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 indexmap = { version = "2", features = ["serde"] }

@@ -202,4 +202,47 @@ mod tests {
         assert!(r.changed);
         assert!(dest_dir.join("file.txt").exists());
     }
+
+    #[test]
+    fn test_copy_content_creates_parent_dirs() {
+        let tmp = TempDir::new().unwrap();
+        let dest = tmp.path().join("sub").join("dir").join("out.txt");
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert("content".to_string(), Value::String("hello".to_string()));
+        args.insert(
+            "dest".to_string(),
+            Value::String(dest.to_str().unwrap().to_string()),
+        );
+        let r = CopyModule
+            .invoke(&crate::registry::ModuleArgs::new(args), "h", &mut ctx)
+            .unwrap();
+        assert!(r.changed);
+        assert!(dest.exists());
+    }
+
+    #[test]
+    fn test_copy_missing_src_and_content_fails() {
+        let tmp = TempDir::new().unwrap();
+        let dest = tmp.path().join("out.txt");
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert(
+            "dest".to_string(),
+            Value::String(dest.to_str().unwrap().to_string()),
+        );
+        let r = CopyModule.invoke(&crate::registry::ModuleArgs::new(args), "h", &mut ctx);
+        assert!(r.is_err() || r.unwrap().status.is_failed());
+    }
+
+    #[test]
+    fn test_copy_missing_dest_fails() {
+        let mut ctx = ctx();
+        let r = CopyModule.invoke(
+            &crate::registry::ModuleArgs::new(HashMap::new()),
+            "h",
+            &mut ctx,
+        );
+        assert!(r.is_err());
+    }
 }

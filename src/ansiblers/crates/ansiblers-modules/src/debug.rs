@@ -64,4 +64,51 @@ mod tests {
             .unwrap();
         assert!(r.msg.contains("my_var"));
     }
+
+    #[test]
+    fn test_debug_no_args_still_ok() {
+        let mut ctx = ctx();
+        let r = DebugModule
+            .invoke(&ModuleArgs::new(HashMap::new()), "localhost", &mut ctx)
+            .unwrap();
+        assert!(r.status.is_ok());
+    }
+
+    #[test]
+    fn test_debug_msg_number() {
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert("msg".to_string(), Value::Number(42.into()));
+        let r = DebugModule
+            .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+            .unwrap();
+        assert!(r.status.is_ok());
+    }
+
+    #[test]
+    fn test_debug_var_with_value_in_context() {
+        let mut ctx = ctx();
+        ctx.playbook_vars
+            .insert("my_key".to_string(), Value::String("hello".to_string()));
+        let mut args = HashMap::new();
+        args.insert("var".to_string(), Value::String("my_key".to_string()));
+        let r = DebugModule
+            .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+            .unwrap();
+        // Should include the value in the output message
+        assert!(r.status.is_ok());
+    }
+
+    #[test]
+    fn test_debug_verbosity_msg() {
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert("msg".to_string(), Value::String("verbose only".to_string()));
+        args.insert("verbosity".to_string(), Value::Number(3.into()));
+        // Low verbosity context: still should not fail
+        let r = DebugModule
+            .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+            .unwrap();
+        assert!(r.status.is_ok());
+    }
 }

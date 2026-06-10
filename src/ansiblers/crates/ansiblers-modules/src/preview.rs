@@ -261,4 +261,43 @@ mod tests {
         let diff = collect_overlayfs_diff(tmp.path());
         assert!(diff.is_empty());
     }
+
+    #[test]
+    fn test_overlay_diff_with_file() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        std::fs::write(tmp.path().join("changed.txt"), b"hello").unwrap();
+        let diff = collect_overlayfs_diff(tmp.path());
+        assert!(!diff.is_empty());
+    }
+
+    #[test]
+    fn test_preview_wrapper_new_enabled_matches_bwrap_availability() {
+        let w = PreviewModeWrapper::new(ShellModule);
+        assert_eq!(w.enabled, is_bwrap_available());
+    }
+
+    #[test]
+    fn test_force_enabled() {
+        let w = PreviewModeWrapper::new(ShellModule).force_enabled();
+        assert!(w.enabled);
+    }
+
+    #[test]
+    fn test_preview_disabled_passes_through_result() {
+        let wrapper = PreviewModeWrapper {
+            inner: ShellModule,
+            enabled: false,
+            bwrap_path: "bwrap".to_string(),
+        };
+        let mut args_map = HashMap::new();
+        args_map.insert(
+            "_raw_params".to_string(),
+            Value::String("echo ok".to_string()),
+        );
+        let mut c = ctx();
+        let r = wrapper
+            .invoke(&ModuleArgs::new(args_map), "h", &mut c)
+            .unwrap();
+        assert!(r.stdout.contains("ok"));
+    }
 }

@@ -110,7 +110,9 @@ impl ModuleInvoker for GitModule {
                 TaskResult::ok(host)
             };
             result.vars.insert("before".into(), Value::String(before));
-            result.vars.insert("after".into(), Value::String(after.clone()));
+            result
+                .vars
+                .insert("after".into(), Value::String(after.clone()));
             ctx.set_fact(host, "git_sha".into(), Value::String(after));
             return Ok(result);
         }
@@ -210,7 +212,10 @@ fn git_head_sha(dest: &Path) -> Option<String> {
 }
 
 fn bool_arg(args: &ModuleArgs, key: &str, default: bool) -> bool {
-    args.args.get(key).and_then(|v| v.as_bool()).unwrap_or(default)
+    args.args
+        .get(key)
+        .and_then(|v| v.as_bool())
+        .unwrap_or(default)
 }
 
 #[cfg(test)]
@@ -258,7 +263,10 @@ mod tests {
         let mut c = ctx();
         let args = make_args(&[
             ("repo", Value::String("https://example.com/r.git".into())),
-            ("dest", Value::String(tmp.path().to_str().unwrap().to_string())),
+            (
+                "dest",
+                Value::String(tmp.path().to_str().unwrap().to_string()),
+            ),
             ("update", Value::Bool(false)),
         ]);
         let result = GitModule.invoke(&args, "h", &mut c).unwrap();
@@ -292,13 +300,38 @@ mod tests {
         let dst = TempDir::new().unwrap();
 
         // Init bare source repo and add one commit.
-        if Command::new("git").args(["init", src.path().to_str().unwrap()]).status().is_err() {
+        if Command::new("git")
+            .args(["init", src.path().to_str().unwrap()])
+            .status()
+            .is_err()
+        {
             return; // git not available in this environment
         }
-        Command::new("git").args(["-C", src.path().to_str().unwrap(), "config", "user.email", "test@test.com"]).status().ok();
-        Command::new("git").args(["-C", src.path().to_str().unwrap(), "config", "user.name", "Test"]).status().ok();
+        Command::new("git")
+            .args([
+                "-C",
+                src.path().to_str().unwrap(),
+                "config",
+                "user.email",
+                "test@test.com",
+            ])
+            .status()
+            .ok();
+        Command::new("git")
+            .args([
+                "-C",
+                src.path().to_str().unwrap(),
+                "config",
+                "user.name",
+                "Test",
+            ])
+            .status()
+            .ok();
         std::fs::write(src.path().join("README.md"), "hello").unwrap();
-        Command::new("git").args(["-C", src.path().to_str().unwrap(), "add", "."]).status().ok();
+        Command::new("git")
+            .args(["-C", src.path().to_str().unwrap(), "add", "."])
+            .status()
+            .ok();
         let commit_ok = Command::new("git")
             .args(["-C", src.path().to_str().unwrap(), "commit", "-m", "init"])
             .status()
@@ -312,8 +345,14 @@ mod tests {
         let dest_path = dst.path().join("repo");
         let mut c = ctx();
         let args = make_args(&[
-            ("repo", Value::String(src.path().to_str().unwrap().to_string())),
-            ("dest", Value::String(dest_path.to_str().unwrap().to_string())),
+            (
+                "repo",
+                Value::String(src.path().to_str().unwrap().to_string()),
+            ),
+            (
+                "dest",
+                Value::String(dest_path.to_str().unwrap().to_string()),
+            ),
         ]);
         let result = GitModule.invoke(&args, "h", &mut c).unwrap();
         assert!(result.status.is_ok());

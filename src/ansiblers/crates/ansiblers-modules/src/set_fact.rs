@@ -59,4 +59,55 @@ mod tests {
             Some(&Value::String("42".to_string()))
         );
     }
+
+    #[test]
+    fn test_set_fact_multiple_keys() {
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert("key_a".to_string(), Value::String("val_a".to_string()));
+        args.insert("key_b".to_string(), Value::Bool(true));
+        SetFactModule
+            .invoke(&ModuleArgs::new(args), "host1", &mut ctx)
+            .unwrap();
+        assert_eq!(
+            ctx.get_fact("host1", "key_a"),
+            Some(&Value::String("val_a".to_string()))
+        );
+        assert_eq!(ctx.get_fact("host1", "key_b"), Some(&Value::Bool(true)));
+    }
+
+    #[test]
+    fn test_set_fact_number_value() {
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert("count".to_string(), Value::Number(7.into()));
+        SetFactModule
+            .invoke(&ModuleArgs::new(args), "h", &mut ctx)
+            .unwrap();
+        assert!(ctx.get_fact("h", "count").is_some());
+    }
+
+    #[test]
+    fn test_set_fact_returns_ok() {
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert("x".to_string(), Value::Null);
+        let r = SetFactModule
+            .invoke(&ModuleArgs::new(args), "h", &mut ctx)
+            .unwrap();
+        assert!(r.status.is_ok());
+    }
+
+    #[test]
+    fn test_set_fact_per_host_isolation() {
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert("env".to_string(), Value::String("prod".to_string()));
+        SetFactModule
+            .invoke(&ModuleArgs::new(args.clone()), "host_a", &mut ctx)
+            .unwrap();
+        // host_b should not have the fact
+        assert!(ctx.get_fact("host_b", "env").is_none());
+        assert!(ctx.get_fact("host_a", "env").is_some());
+    }
 }

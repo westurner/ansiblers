@@ -22,6 +22,7 @@ thiserror           = { workspace = true }
 tokio               = { workspace = true }
 tempfile            = { workspace = true }
 fancy-regex         = { workspace = true }
+rusqlite            = { workspace = true }
 indexmap            = { workspace = true }
 tracing             = { workspace = true }
 # Optional: only compiled when the `native-python` feature is enabled.

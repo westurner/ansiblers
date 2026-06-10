@@ -151,4 +151,70 @@ mod tests {
         assert_eq!(stat["exists"], Value::Bool(true));
         assert_eq!(stat["isdir"], Value::Bool(true));
     }
+
+    #[test]
+    fn test_stat_file_size() {
+        let tmp = TempDir::new().unwrap();
+        let f = tmp.path().join("sized.txt");
+        std::fs::write(&f, b"hello").unwrap();
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert(
+            "path".to_string(),
+            Value::String(f.to_str().unwrap().to_string()),
+        );
+        let r = StatModule
+            .invoke(&crate::registry::ModuleArgs::new(args), "h", &mut ctx)
+            .unwrap();
+        assert_eq!(r.vars["stat"]["size"], Value::Number(5.into()));
+    }
+
+    #[test]
+    fn test_stat_is_file_not_dir() {
+        let tmp = TempDir::new().unwrap();
+        let f = tmp.path().join("f.txt");
+        std::fs::write(&f, b"").unwrap();
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert(
+            "path".to_string(),
+            Value::String(f.to_str().unwrap().to_string()),
+        );
+        let r = StatModule
+            .invoke(&crate::registry::ModuleArgs::new(args), "h", &mut ctx)
+            .unwrap();
+        assert_eq!(r.vars["stat"]["isreg"], Value::Bool(true));
+        assert_eq!(r.vars["stat"]["isdir"], Value::Bool(false));
+    }
+
+    #[test]
+    fn test_stat_symlink() {
+        let tmp = TempDir::new().unwrap();
+        let target = tmp.path().join("target.txt");
+        let link = tmp.path().join("link.txt");
+        std::fs::write(&target, b"data").unwrap();
+        std::os::unix::fs::symlink(&target, &link).unwrap();
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert(
+            "path".to_string(),
+            Value::String(link.to_str().unwrap().to_string()),
+        );
+        let r = StatModule
+            .invoke(&crate::registry::ModuleArgs::new(args), "h", &mut ctx)
+            .unwrap();
+        assert_eq!(r.vars["stat"]["islnk"], Value::Bool(true));
+        assert!(r.vars["stat"].get("lnk_target").is_some());
+    }
+
+    #[test]
+    fn test_stat_missing_path_errors() {
+        let mut ctx = ctx();
+        let r = StatModule.invoke(
+            &crate::registry::ModuleArgs::new(HashMap::new()),
+            "h",
+            &mut ctx,
+        );
+        assert!(r.is_err());
+    }
 }

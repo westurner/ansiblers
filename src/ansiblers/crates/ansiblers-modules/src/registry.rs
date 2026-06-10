@@ -6,21 +6,50 @@ use std::sync::Arc;
 use ansiblers_core::{ExecutionContext, TaskResult};
 use anyhow::Result;
 
+use crate::apk::ApkModule;
+use crate::appimage::AppimageModule;
 use crate::apt::AptModule;
+use crate::chocolatey::ChocolateyModule;
 use crate::command::CommandModule;
+use crate::conda::CondaModule;
 use crate::copy::CopyModule;
 use crate::debug::DebugModule;
+use crate::dnf_history::DnfHistoryModule;
 use crate::fail::FailModule;
 use crate::file::FileModule;
 use crate::find::FindModule;
+use crate::flatpak::FlatpakModule;
 use crate::git::GitModule;
+use crate::homebrew::HomebrewModule;
 use crate::lineinfile::LineinfileModule;
+use crate::macports::MacPortsModule;
+use crate::nix::NixModule;
+use crate::ostree::OstreeModule;
+use crate::pacman::PacmanModule;
+use crate::pip::PipModule;
+use crate::pip_tools::PipToolsModule;
+use crate::pipenv::PipenvModule;
+use crate::pixi::PixiModule;
+use crate::pkg5::Pkg5Module;
+use crate::pkg_add::PkgAddModule;
+use crate::pkgng::PkgngModule;
+use crate::pkgsrc::PkgsrcModule;
+use crate::poetry::PoetryModule;
+use crate::portage::PortageModule;
+use crate::rpm_ostree::RpmOstreeModule;
 use crate::set_fact::SetFactModule;
 use crate::setup::SetupModule;
 use crate::shell::ShellModule;
+use crate::slackpkg::SlackpkgModule;
+use crate::snap::SnapModule;
 use crate::stat::StatModule;
+use crate::svr4pkg::Svr4PkgModule;
 use crate::template::TemplateModule;
+use crate::uv::UvModule;
 use crate::yum::YumModule;
+use crate::zopen::ZopenModule;
+use crate::zos::ZosModule;
+use crate::zypper::ZypperModule;
 
 /// Arguments passed to a module at invocation time.
 ///
@@ -110,6 +139,60 @@ impl ModuleRegistry {
         r.register("setup", Arc::new(SetupModule));
         r.register("gather_facts", Arc::new(SetupModule));
         r.register("git", Arc::new(GitModule));
+        // ostree / rpm-ostree
+        r.register("ostree", Arc::new(OstreeModule));
+        r.register("rpm_ostree", Arc::new(RpmOstreeModule));
+        // dnf history
+        r.register("dnf_history", Arc::new(DnfHistoryModule));
+        // cross-platform / other package managers
+        r.register("pacman", Arc::new(PacmanModule));
+        r.register("apk", Arc::new(ApkModule));
+        r.register("zypper", Arc::new(ZypperModule));
+        r.register("homebrew", Arc::new(HomebrewModule));
+        r.register("brew", Arc::new(HomebrewModule));
+        r.register("conda", Arc::new(CondaModule));
+        r.register("mamba", Arc::new(CondaModule));
+        r.register("micromamba", Arc::new(CondaModule));
+        r.register("pixi", Arc::new(PixiModule));
+        r.register("pip", Arc::new(PipModule));
+        r.register("pip3", Arc::new(PipModule));
+        r.register("uv", Arc::new(UvModule));
+        // more Python package managers
+        r.register("poetry", Arc::new(PoetryModule));
+        r.register("pip_tools", Arc::new(PipToolsModule));
+        r.register("pipenv", Arc::new(PipenvModule));
+        // universal / container / app packaging
+        r.register("flatpak", Arc::new(FlatpakModule));
+        r.register("snap", Arc::new(SnapModule));
+        r.register("appimage", Arc::new(AppimageModule));
+        // functional / source-based
+        r.register("nix", Arc::new(NixModule));
+        r.register("guix", Arc::new(NixModule));
+        r.register("portage", Arc::new(PortageModule));
+        r.register("emerge", Arc::new(PortageModule));
+        // Slackware
+        r.register("slackpkg", Arc::new(SlackpkgModule));
+        r.register("pkgtools", Arc::new(SlackpkgModule));
+        // Windows
+        r.register("chocolatey", Arc::new(ChocolateyModule));
+        r.register("choco", Arc::new(ChocolateyModule));
+        // BSD / macOS
+        r.register("pkg_add", Arc::new(PkgAddModule));
+        r.register("pkgng", Arc::new(PkgngModule));
+        r.register("pkg", Arc::new(PkgngModule));
+        r.register("pkgsrc", Arc::new(PkgsrcModule));
+        r.register("pkgin", Arc::new(PkgsrcModule));
+        r.register("macports", Arc::new(MacPortsModule));
+        r.register("port", Arc::new(MacPortsModule));
+        // Solaris / OpenIndiana / Illumos
+        r.register("pkg5", Arc::new(Pkg5Module));
+        r.register("pkg6", Arc::new(Pkg5Module)); // IPS alias for newer Solaris 11.4+
+        r.register("ips", Arc::new(Pkg5Module));
+        r.register("svr4pkg", Arc::new(Svr4PkgModule));
+        r.register("pkgadd", Arc::new(Svr4PkgModule));
+        // z/OS
+        r.register("zopen", Arc::new(ZopenModule));
+        r.register("zos", Arc::new(ZosModule));
         r
     }
 
@@ -141,5 +224,140 @@ impl ModuleRegistry {
                 format!("module not found: {module}"),
             )),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ansiblers_core::{ExecutionContext, Inventory, Value};
+    use std::collections::HashMap;
+    use std::sync::Arc;
+
+    fn ctx() -> ExecutionContext {
+        ExecutionContext::new(Arc::new(Inventory::default()), HashMap::new())
+    }
+
+    fn empty_args() -> ModuleArgs {
+        ModuleArgs::new(HashMap::new())
+    }
+
+    #[test]
+    fn test_with_defaults_registers_shell() {
+        let r = ModuleRegistry::with_defaults();
+        assert!(r.get("shell").is_some());
+    }
+
+    #[test]
+    fn test_with_defaults_registers_all_phase1() {
+        let r = ModuleRegistry::with_defaults();
+        for name in &["shell", "command", "debug", "set_fact", "fail"] {
+            assert!(r.get(name).is_some(), "missing: {name}");
+        }
+    }
+
+    #[test]
+    fn test_with_defaults_registers_phase2() {
+        let r = ModuleRegistry::with_defaults();
+        for name in &["file", "copy", "stat"] {
+            assert!(r.get(name).is_some(), "missing: {name}");
+        }
+    }
+
+    #[test]
+    fn test_with_defaults_registers_package_managers() {
+        let r = ModuleRegistry::with_defaults();
+        for name in &[
+            "apt", "yum", "dnf", "pacman", "apk", "zypper", "brew", "conda", "pip", "pip3", "uv",
+            "pixi", "poetry", "pipenv",
+        ] {
+            assert!(r.get(name).is_some(), "missing: {name}");
+        }
+    }
+
+    #[test]
+    fn test_with_defaults_registers_bsd_modules() {
+        let r = ModuleRegistry::with_defaults();
+        for name in &["pkg_add", "pkg", "pkgin", "port"] {
+            assert!(r.get(name).is_some(), "missing: {name}");
+        }
+    }
+
+    #[test]
+    fn test_with_defaults_registers_universal_packaging() {
+        let r = ModuleRegistry::with_defaults();
+        for name in &[
+            "flatpak", "snap", "appimage", "nix", "guix", "emerge", "portage",
+        ] {
+            assert!(r.get(name).is_some(), "missing: {name}");
+        }
+    }
+
+    #[test]
+    fn test_with_defaults_registers_zos() {
+        let r = ModuleRegistry::with_defaults();
+        assert!(r.get("zopen").is_some());
+        assert!(r.get("zos").is_some());
+    }
+
+    #[test]
+    fn test_unknown_module_returns_failed() {
+        let r = ModuleRegistry::with_defaults();
+        let mut c = ctx();
+        let result = r
+            .invoke("no_such_module", &empty_args(), "h", &mut c)
+            .unwrap();
+        assert!(result.status.is_failed());
+        assert!(result.msg.contains("module not found"));
+    }
+
+    #[test]
+    fn test_custom_register_and_get() {
+        let mut r = ModuleRegistry::with_defaults();
+        // Re-register "debug" under a custom name.
+        let debug_invoker = r.get("debug").unwrap();
+        r.register("my_debug", debug_invoker);
+        assert!(r.get("my_debug").is_some());
+    }
+
+    #[test]
+    fn test_clone_defaults_has_same_modules() {
+        let r = ModuleRegistry::clone_defaults();
+        assert!(r.get("shell").is_some());
+        assert!(r.get("apt").is_some());
+    }
+
+    #[test]
+    fn test_module_args_get_str() {
+        let mut m = HashMap::new();
+        m.insert("key".to_string(), Value::String("val".to_string()));
+        let args = ModuleArgs::new(m);
+        assert_eq!(args.get_str("key"), Some("val"));
+        assert_eq!(args.get_str("missing"), None);
+    }
+
+    #[test]
+    fn test_module_args_get_raw_params() {
+        let mut m = HashMap::new();
+        m.insert(
+            "_raw_params".to_string(),
+            Value::String("echo hi".to_string()),
+        );
+        let args = ModuleArgs::new(m);
+        assert_eq!(args.get_raw_params(), Some("echo hi"));
+    }
+
+    #[test]
+    fn test_invoke_shell_echo_succeeds() {
+        let r = ModuleRegistry::with_defaults();
+        let mut c = ctx();
+        let mut m = HashMap::new();
+        m.insert(
+            "_raw_params".to_string(),
+            Value::String("echo registry_test".to_string()),
+        );
+        let result = r.invoke("shell", &ModuleArgs::new(m), "h", &mut c).unwrap();
+        assert!(result.status.is_ok());
+        assert!(result.stdout.contains("registry_test"));
     }
 }

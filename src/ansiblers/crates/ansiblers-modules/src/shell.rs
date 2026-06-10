@@ -128,4 +128,85 @@ mod tests {
         assert!(result.status.is_ok());
         assert!(result.msg.contains("exists"));
     }
+
+    #[test]
+    fn test_shell_removes_skip_when_absent() {
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert(
+            "_raw_params".to_string(),
+            ansiblers_core::Value::String("echo run".to_string()),
+        );
+        // This file does not exist → removes condition not met → skip.
+        args.insert(
+            "removes".to_string(),
+            ansiblers_core::Value::String("/nonexistent/xyz12345".to_string()),
+        );
+        let r = ShellModule
+            .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+            .unwrap();
+        assert!(r.status.is_ok());
+    }
+
+    #[test]
+    fn test_shell_removes_runs_when_file_exists() {
+        use tempfile::NamedTempFile;
+        let tmp = NamedTempFile::new().unwrap();
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert(
+            "_raw_params".to_string(),
+            ansiblers_core::Value::String("echo did_run".to_string()),
+        );
+        args.insert(
+            "removes".to_string(),
+            ansiblers_core::Value::String(tmp.path().to_str().unwrap().to_string()),
+        );
+        let r = ShellModule
+            .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+            .unwrap();
+        assert!(r.status.is_ok());
+        assert!(r.stdout.contains("did_run"));
+    }
+
+    #[test]
+    fn test_shell_missing_command_errors() {
+        let mut ctx = ctx();
+        let r = ShellModule.invoke(&ModuleArgs::new(HashMap::new()), "localhost", &mut ctx);
+        assert!(r.is_err());
+    }
+
+    #[test]
+    fn test_shell_chdir() {
+        use tempfile::TempDir;
+        let tmp = TempDir::new().unwrap();
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert(
+            "_raw_params".to_string(),
+            ansiblers_core::Value::String("pwd".to_string()),
+        );
+        args.insert(
+            "chdir".to_string(),
+            ansiblers_core::Value::String(tmp.path().to_str().unwrap().to_string()),
+        );
+        let r = ShellModule
+            .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+            .unwrap();
+        assert!(r.status.is_ok());
+    }
+
+    #[test]
+    fn test_shell_rc_captured() {
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert(
+            "_raw_params".to_string(),
+            ansiblers_core::Value::String("exit 5".to_string()),
+        );
+        let r = ShellModule
+            .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+            .unwrap();
+        assert_eq!(r.rc, 5);
+    }
 }

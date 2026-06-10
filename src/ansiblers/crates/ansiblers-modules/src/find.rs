@@ -36,7 +36,10 @@ impl ModuleInvoker for FindModule {
         // Collect root paths.
         let roots = collect_strings(args, &["paths", "path"]);
         if roots.is_empty() {
-            return Ok(TaskResult::failed(host, "find: 'paths' is required".to_string()));
+            return Ok(TaskResult::failed(
+                host,
+                "find: 'paths' is required".to_string(),
+            ));
         }
 
         let patterns = collect_strings(args, &["patterns", "pattern"]);
@@ -61,14 +64,7 @@ impl ModuleInvoker for FindModule {
                 continue;
             }
             find_in(
-                root_path,
-                &patterns,
-                file_type,
-                recurse,
-                hidden,
-                age_secs,
-                size_bytes,
-                &excludes,
+                root_path, &patterns, file_type, recurse, hidden, age_secs, size_bytes, &excludes,
                 &mut found,
             )?;
         }
@@ -132,7 +128,9 @@ fn find_in(
 
         if meta.is_dir() {
             if recurse {
-                find_in(&path, patterns, file_type, recurse, hidden, age, size, excludes, found)?;
+                find_in(
+                    &path, patterns, file_type, recurse, hidden, age, size, excludes, found,
+                )?;
             }
             if !matches!(file_type, "directory" | "any") {
                 continue;
@@ -217,9 +215,10 @@ fn collect_strings(args: &ModuleArgs, keys: &[&str]) -> Vec<String> {
         if let Some(val) = args.args.get(*key) {
             return match val {
                 Value::String(s) => vec![s.clone()],
-                Value::Array(seq) => {
-                    seq.iter().filter_map(|v| v.as_str().map(|s| s.to_string())).collect()
-                }
+                Value::Array(seq) => seq
+                    .iter()
+                    .filter_map(|v| v.as_str().map(|s| s.to_string()))
+                    .collect(),
                 _ => vec![],
             };
         }
@@ -228,7 +227,10 @@ fn collect_strings(args: &ModuleArgs, keys: &[&str]) -> Vec<String> {
 }
 
 fn bool_arg(args: &ModuleArgs, key: &str, default: bool) -> bool {
-    args.args.get(key).and_then(|v| v.as_bool()).unwrap_or(default)
+    args.args
+        .get(key)
+        .and_then(|v| v.as_bool())
+        .unwrap_or(default)
 }
 
 /// Parse an age string like `"3600"`, `"-3600"` (negative = newer than).
@@ -340,7 +342,10 @@ mod tests {
             std::collections::HashMap::new(),
         );
         let args = make_args(&[
-            ("paths", Value::String(tmp.path().to_string_lossy().into_owned())),
+            (
+                "paths",
+                Value::String(tmp.path().to_string_lossy().into_owned()),
+            ),
             ("patterns", Value::String("*.txt".into())),
         ]);
         let result = FindModule.invoke(&args, "localhost", &mut ctx).unwrap();
@@ -366,7 +371,10 @@ mod tests {
             std::collections::HashMap::new(),
         );
         let args = make_args(&[
-            ("paths", Value::String(tmp.path().to_string_lossy().into_owned())),
+            (
+                "paths",
+                Value::String(tmp.path().to_string_lossy().into_owned()),
+            ),
             ("patterns", Value::String("*.txt".into())),
             ("recurse", Value::Bool(true)),
         ]);

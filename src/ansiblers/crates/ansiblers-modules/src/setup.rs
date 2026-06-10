@@ -52,7 +52,9 @@ impl ModuleInvoker for SetupModule {
 
         let mut result = TaskResult::ok(host);
         let facts_obj: serde_json::Map<String, Value> = facts.into_iter().collect();
-        result.vars.insert("ansible_facts".into(), Value::Object(facts_obj));
+        result
+            .vars
+            .insert("ansible_facts".into(), Value::Object(facts_obj));
         result.msg = "Facts gathered".to_string();
         Ok(result)
     }
@@ -121,7 +123,10 @@ fn collect_os_release(facts: &mut HashMap<String, Value>) {
 
     facts.insert("ansible_os_family".into(), Value::String(os_family.into()));
     facts.insert("ansible_distribution".into(), Value::String(distribution));
-    facts.insert("ansible_distribution_version".into(), Value::String(version));
+    facts.insert(
+        "ansible_distribution_version".into(),
+        Value::String(version),
+    );
     facts.insert(
         "ansible_distribution_release".into(),
         Value::String(kv.get("VERSION_CODENAME").cloned().unwrap_or_default()),
@@ -156,7 +161,10 @@ fn collect_hostname(facts: &mut HashMap<String, Value>) {
 
 fn collect_cpu_info(facts: &mut HashMap<String, Value>) {
     let content = read_file("/proc/cpuinfo").unwrap_or_default();
-    let count = content.lines().filter(|l| l.starts_with("processor")).count();
+    let count = content
+        .lines()
+        .filter(|l| l.starts_with("processor"))
+        .count();
     facts.insert(
         "ansible_processor_count".into(),
         Value::Number(serde_json::Number::from(count as u64)),
@@ -187,16 +195,28 @@ fn collect_mem_info(facts: &mut HashMap<String, Value>) {
         let mb = kb / 1024;
         match key {
             "MemTotal" => {
-                facts.insert("ansible_memtotal_mb".into(), Value::Number(serde_json::Number::from(mb)));
+                facts.insert(
+                    "ansible_memtotal_mb".into(),
+                    Value::Number(serde_json::Number::from(mb)),
+                );
             }
             "MemFree" => {
-                facts.insert("ansible_memfree_mb".into(), Value::Number(serde_json::Number::from(mb)));
+                facts.insert(
+                    "ansible_memfree_mb".into(),
+                    Value::Number(serde_json::Number::from(mb)),
+                );
             }
             "SwapTotal" => {
-                facts.insert("ansible_swaptotal_mb".into(), Value::Number(serde_json::Number::from(mb)));
+                facts.insert(
+                    "ansible_swaptotal_mb".into(),
+                    Value::Number(serde_json::Number::from(mb)),
+                );
             }
             "SwapFree" => {
-                facts.insert("ansible_swapfree_mb".into(), Value::Number(serde_json::Number::from(mb)));
+                facts.insert(
+                    "ansible_swapfree_mb".into(),
+                    Value::Number(serde_json::Number::from(mb)),
+                );
             }
             _ => {}
         }
@@ -302,7 +322,10 @@ fn collect_virtualization(facts: &mut HashMap<String, Value>) {
         "none"
     };
 
-    facts.insert("ansible_virtualization_type".into(), Value::String(vtype.into()));
+    facts.insert(
+        "ansible_virtualization_type".into(),
+        Value::String(vtype.into()),
+    );
     facts.insert(
         "ansible_virtualization_role".into(),
         Value::String(if vtype == "none" { "host" } else { "guest" }.into()),

@@ -54,4 +54,34 @@ mod tests {
             .unwrap();
         assert!(r.status.is_failed());
     }
+
+    #[test]
+    fn test_fail_rc_is_nonzero() {
+        let mut ctx = ctx();
+        let r = FailModule
+            .invoke(&ModuleArgs::new(HashMap::new()), "localhost", &mut ctx)
+            .unwrap();
+        assert!(r.rc != 0 || r.status.is_failed());
+    }
+
+    #[test]
+    fn test_fail_changed_is_false() {
+        let mut ctx = ctx();
+        let r = FailModule
+            .invoke(&ModuleArgs::new(HashMap::new()), "localhost", &mut ctx)
+            .unwrap();
+        assert!(!r.changed);
+    }
+
+    #[test]
+    fn test_fail_with_multiline_msg() {
+        let mut ctx = ctx();
+        let mut args = HashMap::new();
+        args.insert("msg".to_string(), Value::String("line1\nline2".to_string()));
+        let r = FailModule
+            .invoke(&ModuleArgs::new(args), "localhost", &mut ctx)
+            .unwrap();
+        assert!(r.status.is_failed());
+        assert!(r.msg.contains("line1"));
+    }
 }

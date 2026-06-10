@@ -21,6 +21,35 @@
 //! | `lineinfile` | 5 | Ensure a line is present/absent in a file (fancy-regex) |
 //! | `setup` | 5 | Gather system facts into `ansible_*` namespace |
 //! | `git` | 5 | Manage git repositories (clone, pull, checkout) |
+//! | `dnf_history` | 5 | DNF transaction history (CLI → python → SQLite fallback) |
+//! | `ostree` | 5 | Manage OSTree repos, refs, remotes, commits, admin ops |
+//! | `rpm_ostree` | 5 | Manage packages/deployments on rpm-ostree systems |
+//! | `pacman` | 5 | Arch Linux packages via pacman/yay/paru |
+//! | `apk` | 5 | Alpine Linux packages via apk |
+//! | `zypper` | 5 | SUSE/openSUSE packages via zypper |
+//! | `homebrew` | 5 | macOS/Linux packages via brew (formulae + casks) |
+//! | `conda` | 5 | conda/mamba/micromamba environments + cross-platform |
+//! | `pixi` | 5 | Project environments via pixi (emscripten-wasm32 etc.) |
+//! | `pip` | 5 | Python packages via pip/pip3 |
+//! | `uv` | 5 | Python packages + tools via uv |
+//! | `flatpak` | 5 | Flatpak applications and runtimes |
+//! | `snap` | 5 | Snap packages via snapd |
+//! | `appimage` | 5 | AppImage bundles (download, verify, integrate) |
+//! | `nix` | 5 | Nix packages + flakes (+ GNU Guix via `use_guix`) |
+//! | `portage` | 5 | Gentoo Linux packages via emerge |
+//! | `slackpkg` | 5 | Slackware pkgtools / slackpkg / slapt-get |
+//! | `chocolatey` | 5 | Windows packages via Chocolatey / NuGet |
+//! | `pkg_add` | 5 | OpenBSD packages via pkg_add / pkg_delete |
+//! | `pkgng` | 5 | FreeBSD packages via pkg (pkgng) |
+//! | `pkgsrc` | 5 | NetBSD/MINIX 3 packages via pkgin / pkgsrc |
+//! | `macports` | 5 | macOS packages via MacPorts |
+//! | `pkg5` | 5 | OpenIndiana / Solaris 11+ IPS (pkg freeze/verify/fix) |
+//! | `svr4pkg` | 5 | Oracle Solaris 10 SVR4 packages (pkgadd/pkgrm) |
+//! | `zopen` | 5 | z/OS Open Tools packages |
+//! | `zos` | 5 | IBM z/OS system resources via z/OSMF REST API |
+//! | `poetry` | 5 | Python project + package management via Poetry |
+//! | `pip_tools` | 5 | pip-compile + pip-sync (pip-tools) |
+//! | `pipenv` | 5 | Python virtualenv + packages via Pipenv |
 //!
 //! ## Python module invocation
 //!
@@ -53,24 +82,53 @@
 //! registry.register("my_custom_module", python);
 //! ```
 
+pub mod apk;
+pub mod appimage;
 pub mod apt;
+pub mod chocolatey;
 pub mod command;
+pub mod conda;
 pub mod copy;
 pub mod debug;
+pub mod dnf_history;
 pub mod fail;
 pub mod file;
 pub mod find;
+pub mod flatpak;
 pub mod git;
+pub mod homebrew;
 pub mod lineinfile;
+pub mod macports;
+pub mod nix;
+pub mod ostree;
+pub mod pacman;
+pub mod pip;
+pub mod pip_tools;
+pub mod pipenv;
+pub mod pixi;
+pub mod pkg5;
+pub mod pkg_add;
+pub mod pkgng;
+pub mod pkgsrc;
+pub mod poetry;
+pub mod portage;
 pub mod preview;
 pub mod python_wrapper;
 pub mod registry;
+pub mod rpm_ostree;
 pub mod set_fact;
 pub mod setup;
 pub mod shell;
+pub mod slackpkg;
+pub mod snap;
 pub mod stat;
+pub mod svr4pkg;
 pub mod template;
+pub mod uv;
 pub mod yum;
+pub mod zopen;
+pub mod zos;
+pub mod zypper;
 
 pub use preview::{is_bwrap_available, PreviewModeWrapper};
 pub use python_wrapper::{

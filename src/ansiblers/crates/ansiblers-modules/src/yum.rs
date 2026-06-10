@@ -47,13 +47,21 @@ impl ModuleInvoker for YumModule {
         }
 
         if packages.is_empty() && !autoremove {
-            return Ok(TaskResult::failed(host, "yum: no package names provided".to_string()));
+            return Ok(TaskResult::failed(
+                host,
+                "yum: no package names provided".to_string(),
+            ));
         }
 
         let result = match state {
-            "absent" | "removed" => {
-                yum_remove(&packages, autoremove, skip_broken, enablerepo, disablerepo, host)?
-            }
+            "absent" | "removed" => yum_remove(
+                &packages,
+                autoremove,
+                skip_broken,
+                enablerepo,
+                disablerepo,
+                host,
+            )?,
             "latest" => yum_install(
                 &packages,
                 true,
@@ -101,7 +109,10 @@ fn collect_packages(args: &ModuleArgs) -> Vec<String> {
 }
 
 fn bool_arg(args: &ModuleArgs, key: &str, default: bool) -> bool {
-    args.args.get(key).and_then(|v| v.as_bool()).unwrap_or(default)
+    args.args
+        .get(key)
+        .and_then(|v| v.as_bool())
+        .unwrap_or(default)
 }
 
 /// Detect the preferred package manager (dnf > yum).
@@ -114,7 +125,11 @@ fn pkg_manager() -> &'static str {
 }
 
 fn which(binary: &str) -> bool {
-    Command::new("which").arg(binary).status().map(|s| s.success()).unwrap_or(false)
+    Command::new("which")
+        .arg(binary)
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false)
 }
 
 /// Check whether an RPM package is installed.
@@ -200,11 +215,18 @@ fn yum_install(
         let mut r = TaskResult::changed(host);
         r.msg = format!(
             "{subcmd}ed: {}",
-            needs_action.iter().map(|p| p.as_str()).collect::<Vec<_>>().join(", ")
+            needs_action
+                .iter()
+                .map(|p| p.as_str())
+                .collect::<Vec<_>>()
+                .join(", ")
         );
         Ok(r)
     } else {
-        Ok(TaskResult::failed(host, format!("yum {subcmd} failed with {status}")))
+        Ok(TaskResult::failed(
+            host,
+            format!("yum {subcmd} failed with {status}"),
+        ))
     }
 }
 
@@ -228,7 +250,10 @@ fn yum_remove(
         }
         let status = cmd.status().context("failed to run yum remove")?;
         if !status.success() {
-            return Ok(TaskResult::failed(host, format!("yum remove failed with {status}")));
+            return Ok(TaskResult::failed(
+                host,
+                format!("yum remove failed with {status}"),
+            ));
         }
     }
 
@@ -238,14 +263,21 @@ fn yum_remove(
             .status()
             .context("failed to run yum autoremove")?;
         if !status.success() {
-            return Ok(TaskResult::failed(host, format!("yum autoremove failed with {status}")));
+            return Ok(TaskResult::failed(
+                host,
+                format!("yum autoremove failed with {status}"),
+            ));
         }
     }
 
     let mut r = TaskResult::changed(host);
     r.msg = format!(
         "removed: {}",
-        installed.iter().map(|p| p.as_str()).collect::<Vec<_>>().join(", ")
+        installed
+            .iter()
+            .map(|p| p.as_str())
+            .collect::<Vec<_>>()
+            .join(", ")
     );
     Ok(r)
 }
@@ -274,7 +306,10 @@ mod tests {
     fn test_collect_packages_list() {
         let args = make_args(&[(
             "name",
-            Value::Array(vec![Value::String("curl".into()), Value::String("wget".into())]),
+            Value::Array(vec![
+                Value::String("curl".into()),
+                Value::String("wget".into()),
+            ]),
         )]);
         let pkgs = collect_packages(&args);
         assert!(pkgs.contains(&"curl".to_string()));
@@ -297,5 +332,35 @@ mod tests {
         let args = ModuleArgs::new(HashMap::new());
         let result = YumModule.invoke(&args, "localhost", &mut ctx).unwrap();
         assert!(result.status.is_failed());
+    }
+
+    #[test]
+    fn test_collect_packages_pkg_alias() {
+        let args = make_args(&[("pkg", Value::String("bash".into()))]);
+        assert_eq!(collect_packages(&args), vec!["bash"]);
+    }
+
+    #[test]
+    fn test_bool_arg_override() {
+        let args = make_args(&[("skip_broken", Value::Bool(true))]);
+        assert!(bool_arg(&args, "skip_broken", false));
+    }
+
+    #[test]
+    fn test_collect_packages_space_separated() {
+        let args = make_args(&[("name", Value::String("curl wget git".into()))]);
+        assert_eq!(collect_packages(&args), vec!["curl", "wget", "git"]);
+    }
+
+    #[test]
+    fn test_security_default_false() {
+        let args = ModuleArgs::new(HashMap::new());
+        assert!(!bool_arg(&args, "security", false));
+    }
+
+    #[test]
+    fn test_autoremove_default_false() {
+        let args = ModuleArgs::new(HashMap::new());
+        assert!(!bool_arg(&args, "autoremove", false));
     }
 }
