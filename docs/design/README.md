@@ -108,6 +108,8 @@ cargo new crates/ansiblers-vars --lib
 cargo new crates/ansiblers-templates --lib
 cargo new crates/ansiblers-executor --lib
 cargo new crates/ansiblers-modules --lib
+cargo new crates/ansiblers-build --lib
+cargo new crates/ansiblers-molecule --lib
 cargo new crates/ansiblers-playbook
 
 # 3. Set up test fixtures
@@ -235,12 +237,14 @@ cargo fmt -- --check
 ```
 ✅ Compatibility
   • Multi-host playbooks working
-  • Python module wrapper stable
-  • Rust modules matching Python behavior
+  • `ansiblers-molecule` functional for early multi-node testing
+  • PyO3 module wrapper stable
+  • Rust modules statically compiled as `musl` & `wasm32-wasi` payload binaries
+  • Target modules executed correctly inside `bwrap`/`podman` Preview Modes with OverlayFS
 
 ✅ Performance
   • 2x speedup on multi-host execution
-  • 3x speedup on module invocation
+  • 3x speedup on zero-extraction (`artifact-fs`) module invocation
 
 ✅ Coverage
   • 80% line coverage on executor
@@ -254,11 +258,12 @@ cargo fmt -- --check
   • Used in production by 5+ organizations
   • Zero critical bugs reported
   • 5-10x speedup on representative workloads
+  • Zero-Trust WebRTC execution layer verified with ML-DSA Post-Quantum signatures
 
 ✅ Integration
   • Identified 3+ optimization opportunities for Ansible core
   • Prototype PyO3 integration tested
-  • Community adoption growing
+  • Decentralized artifact builds (c2w, repo2jupyterlite) successfully scaffolding serverless edge workflows
 ```
 
 ---

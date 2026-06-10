@@ -24,15 +24,17 @@ ansiblers/
 │   │   ├── Cargo.lock               # Dependency lock file
 │   │   └── crates/                  # Individual crates
 │   │       ├── ansiblers-core/      # Core execution engine
+│   │       ├── ansiblers-doc/       # ransible-doc binary
 │   │       ├── ansiblers-playbook/  # ransible-playbook binary
 │   │       ├── ansiblers-test/      # ransible-test binary
-│   │       ├── ansiblers-molecule/  # ransible-molecule binary (future)
+│   │       ├── ansiblers-molecule/  # ransible-molecule binary (early multi-node testing)
 │   │       ├── ansiblers-parser/    # YAML/playbook parsing
 │   │       ├── ansiblers-inventory/ # Inventory management
 │   │       ├── ansiblers-modules/   # Module invocation & loading
 │   │       ├── ansiblers-templates/ # Jinja2/template rendering
 │   │       ├── ansiblers-vars/      # Variable resolution
-│   │       ├── ansiblers-executor/  # Task execution engine
+│   │       ├── ansiblers-executor/  # Task execution engine (multiplexed SSH & WebRTC transport)
+│   │       ├── ansiblers-build/     # Artifact generation (Dockerfile, c2w, JupyterLite)
 │   │       └── ansiblers-compat/    # Python compatibility layer (via PyO3/Maturin)
 │   └── ansible/                     # Original Ansible source (for reference)
 ├── docs/
@@ -112,7 +114,7 @@ ansiblers/
 - Variable interpolation in strings, task parameters, conditions
 - Loop context management (item, index)
 
-**Tech Decision**: 
+**Tech Decision**:
 - **minijinja**: Pure Rust, faster, ~95% Jinja2 compatible
 - **PyO3 binding**: Full compatibility with Python Jinja2 (slower but guaranteed compatibility)
 - **Start with minijinja**, fallback to PyO3 for unsupported cases
@@ -125,7 +127,9 @@ ansiblers/
 **Key Features**:
 - Task parameter resolution
 - Conditional evaluation (when, failed_when, changed_when)
-- Block/rescue/always support
+- Pluggable connection architecture supporting standard SSH (`russh`) and WebRTC Zero-Trust PQ Transport.
+- WebRTC transport features PQ X25519MLKEM768 handshakes, W3C DIDs authorization, ML-DSA payload signatures, and Decentralized Merkle batching.
+- Support for both embedded signaling (masterless/libp2p) and external WebSocket signaling servers.
 - Loop expansion (with_items, loop)
 - Delegation support
 - Connection pooling
@@ -142,6 +146,12 @@ ansiblers/
 - **Phase 1**: Shell out to Python modules with direct invocation
 - **Phase 2**: High-value modules in Rust (command, shell, copy, file, etc.)
 - **Phase 3**: Advanced modules (package managers, cloud providers)
+- **Phase 4**: Implement a true **Preview Mode** by wrapping target execution in OS-level sandboxes (`bubblewrap`, `podman`, `crun`) enforcing read-only root mounts and recording OverlayFS diffs.
+- **Phase 5**:
+   - Abandon "compiled-on-target" logic. Instead, cross-compile "Rustball" transit payloads.
+   - Ship statically linked `musl` (`x86_64-unknown-linux-musl`) and WebAssembly (`wasm32-wasi`) targets
+   - **Zero-Extraction Payload**: Use `artifact-fs` to FUSE-mount payloads instead of unzipping on disk.
+   - DID:tdw signatures
 
 **Key Types**:
 - `ModuleRegistry`: Maps module names to implementations
@@ -179,7 +189,17 @@ ansiblers/
 
 ---
 
-### 10. **ansiblers-compat** (PyO3 Bridge)
+### 10. **ansiblers-build** (Artifact Generator)
+**Responsibility**: Generate Dockerfiles, WASM containers, and decentralized environments.
+
+**Features**:
+- Automated Multi-Stage Dockerfile generation with BuildKit caching.
+- `c2w` (container2wasm) support for bundling module dependencies into single `.wasm` files.
+- `repo2jupyterlite` integration to deploy decentralized, browser-based WASM control nodes for playbooks.
+
+---
+
+### 11. **ansiblers-compat** (PyO3 Bridge)
 **Responsibility**: Python interoperability for:
 - Full Jinja2 compatibility (fallback rendering)
 - Dynamic inventory Python scripts
@@ -211,17 +231,16 @@ ansiblers/
 
 ---
 
-### Phase 2: Core Module Support (Months 2-3)
-**Goals**: Essential modules for common use cases
+### Phase 2: Core Module Support, Molecule & Sandboxing (Months 2-3)
+**Goals**: Essential modules, target payload isolation, and early multi-node testing via `ansiblers-molecule`
 
 **Deliverables**:
-- [ ] Python module wrapper (subprocess invocation)
-- [ ] Command, shell, copy, file modules (Rust or wrapped)
-- [ ] Support for blocks, rescue, always
-- [ ] Handler support
-- [ ] Registered variables and variable capture
-- [ ] include_tasks, import_tasks directives
-- [ ] Integration tests with test fixtures
+- [ ] `ansiblers-molecule` driver implementations for multi-node container orchestration
+- [ ] Rust modules statically compiled as `musl` & `wasm32-wasi` payload binaries
+- [ ] Target modules executed inside OS-level `bwrap`/`podman` Preview Mode sandboxes
+- [ ] PyO3 module wrapper and PlaybookRunner bindings
+- [ ] Support for blocks, rescue, always, and handlers
+- [ ] Multi-host execution coordination and testing integration
 
 **Success Criteria**:
 - Run standard Ansible playbooks without modification
@@ -243,14 +262,14 @@ ansiblers/
 
 ---
 
-### Phase 4: Ransible-Test Implementation (Month 3-4)
-**Goals**: Test runner compatible with ansible-test
+### Phase 4: Artifact Generation & Testing (Month 3-4)
+**Goals**: Build target artifacts (`ansiblers-build`) and core test runner (`ansiblers-test`)
 
 **Deliverables**:
-- [ ] Test discovery and organization
-- [ ] Docker container management
-- [ ] Sanity test coordination
-- [ ] Unit test running
+- [ ] Multi-Stage Dockerfile generation with BuildKit caching
+- [ ] `c2w` (container2wasm) generation capabilities
+- [ ] Test discovery, coordination, and organization
+- [ ] `repo2jupyterlite` static decentralized environment scaffolding
 - [ ] Coverage collection with cargo-llvm-cov
 
 ---
@@ -306,7 +325,7 @@ tests/
    ```rust
    #[fixture]
    fn execution_context() -> ExecutionContext { ... }
-   
+
    #[rstest]
    #[case("playbook1.yml")]
    #[case("playbook2.yml")]

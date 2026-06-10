@@ -23,12 +23,15 @@
 Cargo.toml (workspace)
 crates/
   ├── ansiblers-core/Cargo.toml
+  ├── ansiblers-doc/Cargo.toml
   ├── ansiblers-parser/Cargo.toml
   ├── ansiblers-inventory/Cargo.toml
   ├── ansiblers-vars/Cargo.toml
   ├── ansiblers-templates/Cargo.toml
   ├── ansiblers-executor/Cargo.toml
   ├── ansiblers-modules/Cargo.toml
+  ├── ansiblers-build/Cargo.toml
+  ├── ansiblers-molecule/Cargo.toml
   └── ansiblers-playbook/Cargo.toml
 
 GitHub Actions:
@@ -139,7 +142,7 @@ fn test_variable_resolution(#[case] input: &str, #[case] expected: &str) { }
     - name: Run shell command
       shell: echo "hello world"
       register: result
-    
+
     - name: Display output
       debug:
         msg: "{{ result.stdout }}"
@@ -163,45 +166,36 @@ fn test_variable_resolution(#[case] input: &str, #[case] expected: &str) { }
 
 ---
 
-## Phase 2: Core Module Support (Weeks 9-14)
+## Phase 2: Core Module Support, Molecule & Sandboxing (Weeks 9-14)
 
 ### Goals
-- Python module wrapper for broad compatibility
+- Develop `ansiblers-molecule` early for multi-node test isolation and parametrization
+- Cross-compile "Rustball" transit payloads (`amd64` / `musl` / `wasm32-wasi`)
 - Essential modules in Rust (file, copy, debug)
+- Execute modules in Preview Mode OS sandboxes (`bubblewrap`, `crun`, `podman`)
 - Full task control flow (blocks, handlers)
 - Multi-host execution coordination
+- Streaming output to the initiator
 
 ### Milestones
 
-#### Week 9: Python Module Wrapper (ansiblers-modules)
-- [ ] Subprocess module invocation
-- [ ] Module argument JSON passing
-- [ ] Result parsing (JSON)
-- [ ] Environment variable setup
-- [ ] Error handling and timeouts
+#### Week 9: ansiblers-molecule & Multi-Node Testing
+- [ ] Develop `ansiblers-molecule` driver lifecycle states (Create, Converge, Verify, Destroy)
+- [ ] Docker/Podman container creation/cleanup, networking, and volume isolation for multi-node tests
+- [ ] Establish integration test matrix using Pytest for the execution layer.
 
-**Implementation**:
-```rust
-pub struct PythonModuleInvoker {
-    module_path: PathBuf,
-    python_bin: PathBuf,
-}
+#### Week 10: Static Transit Payloads & PyO3 Bindings (ansiblers-modules)
+- [ ] Implement `build.rs` to cross-compile individual modules to `x86_64-unknown-linux-musl` and `wasm32-wasi`.
+- [ ] Set up zero-extraction mechanics via `artifact-fs` FUSE-mounts.
+- [ ] Expose the PlaybookRunner through PyO3 / Maturin.
+- [ ] Module argument JSON bridging & environment setup.
+- [ ] Ansible Python module wrapper for broad compatibility
 
-impl ModuleInvoker for PythonModuleInvoker {
-    fn invoke(&self, args: &ModuleArgs) -> Result<TaskResult> {
-        // Serialize args to JSON
-        // Invoke python module
-        // Parse JSON result
-    }
-}
-```
-
-#### Week 10-11: High-Value Modules in Rust
-- [ ] debug module (display variables)
-- [ ] file module (create, delete, permissions)
-- [ ] copy module (file transfer basics)
-- [ ] stat module (file information)
-- [ ] set_fact module (variable registration)
+#### Week 11: High-Value Modules & Preview Sandbox
+- [ ] Implement debug, file, copy, stat, set_fact modules in Rust.
+- [ ] Wrap target execution with `bubblewrap` (bwrap) enforcing read-only root and an OverlayFS `upperdir`.
+- [ ] Parse OverlayFS diffs to emulate true Ansible `--diff` and `--check` modes.
+- [ ] Ensure OCI compatibility by parameterizing tests to run with `podman` and `crun`.
 
 **Coverage Target**: 80% branch coverage
 
@@ -302,29 +296,24 @@ tests/fixtures/inventories/
 
 ---
 
-## Phase 4: ransible-test Implementation (Weeks 19-22)
+## Phase 4: Artifact Generation & Testing (Weeks 19-22)
 
 ### Goals
-- ansible-test compatible test runner
+- `ansiblers-build` target artifact generation
+- `ansible-test` compatible test runner
 - Container management for test isolation
-- Coverage collection integration
-- Sanity test coordination
 
 ### Milestones
 
-#### Week 19-20: Test Discovery & Organization
-- [ ] Test target directory structure understanding
-- [ ] Test type classification (sanity, unit, integration)
-- [ ] Test discovery logic
-- [ ] Test execution planning
-- [ ] Result aggregation
+#### Week 19-20: ansiblers-build & Artifact generation
+- [ ] Implement Multi-Stage Dockerfile Builder with BuildKit caching.
+- [ ] Integrate `c2w` (container2wasm) outputs.
+- [ ] Scaffold `repo2jupyterlite` static sites for decentralized WASM playbooks.
 
-#### Week 20-21: Container Management & Isolation
-- [ ] Docker container creation/cleanup
-- [ ] Test environment setup
-- [ ] Container networking
-- [ ] Volume mounting for tests
-- [ ] Container resource limits
+#### Week 20-21: Test Execution & CI Integration
+- [ ] Test target directory structure parsing and classification
+- [ ] Sanity test coordination and unit test aggregation
+- [ ] Advanced result reporting and evaluation
 
 #### Week 21-22: Coverage & Reporting
 - [ ] cargo-llvm-cov integration
@@ -387,20 +376,22 @@ tests/fixtures/inventories/
 
 ---
 
-## Phase 6: Performance Optimization & Integration (Weeks 33+)
+## Phase 6: Zero-Trust WebRTC & Performance Optimization (Weeks 33+)
 
 ### Goals
-- Production-ready performance
+- Production-ready, zero-trust WebRTC execution layer
+- Decentralized signaling and PQ cryptography integration
 - Integration opportunities with Ansible core
 - Documentation and adoption guide
 
 ### Milestones
 
-#### Weeks 33-34: Connection Pooling & Optimization
-- [ ] Connection reuse across tasks
-- [ ] Connection timeout handling
-- [ ] SSH keepalive configuration
-- [ ] Performance analysis
+#### Weeks 33-34: Pluggable Transport & WebRTC
+- [ ] Abstract connection providers (`ConnectionProvider` trait)
+- [ ] WebRTC Data Channel implementation (`WebRtcPqConnection`)
+- [ ] X25519MLKEM768 post-quantum cryptographic handshakes
+- [ ] W3C DID document resolution & payload signing (ML-DSA)
+- [ ] Embedded (masterless mesh) and external Signaling providers
 
 #### Weeks 35-36: Parallel Execution
 - [ ] Fan-out parallelization
